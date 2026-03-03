@@ -1,0 +1,15 @@
+@page
+@model BarideWeb.Pages.ErrorModel
+@{
+    ViewData["Title"] = "خطأ";
+}
+
+<div class="text-center mt-5">
+    <h1 class="display-4 text-danger"><i class="bi bi-exclamation-triangle"></i></h1>
+    <h2>حدث خطأ</h2>
+    @if (Model.ShowRequestId)
+    {
+        <p class="text-muted">معرف الطلب: <code>@Model.RequestId</code></p>
+    }
+    <a asp-page="/Index" class="btn btn-primary mt-3">العودة للرئيسية</a>
+</div>

@@ -1,0 +1,32 @@
+## .NET
+bin/
+obj/
+
+## User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docuser
+
+## VS Code
+.vscode/
+
+## JetBrains Rider
+.idea/
+
+## SQLite databases
+*.db
+*.db-shm
+*.db-wal
+
+## ASP.NET uploads
+wwwroot/uploads/
+
+## OS files
+.DS_Store
+Thumbs.db
+
+## Secrets
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json

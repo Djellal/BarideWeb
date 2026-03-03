@@ -1,0 +1,62 @@
+@page
+@model BarideWeb.Pages.Archives.IndexModel
+@{
+    ViewData["Title"] = "الأرشيف";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header card-header-custom">
+                <h5 class="mb-0"><i class="bi bi-archive"></i> إدارة الأرشيف</h5>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrEmpty(Model.Message))
+                {
+                    <div class="alert alert-info alert-dismissible fade show">
+                        @Model.Message
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <p class="text-muted">
+                    الأرشيف الحالي: <span class="badge bg-success">@Model.CurrentArchive</span>
+                </p>
+
+                <p class="text-muted">
+                    يتم تخزين البيانات في قاعدة بيانات SQLite واحدة. يمكن تنزيل نسخة احتياطية من قاعدة البيانات.
+                </p>
+
+                @if (System.IO.File.Exists(Model.DbPath))
+                {
+                    <a href="/Archives/Index?handler=Download" class="btn btn-primary btn-sm mb-3">
+                        <i class="bi bi-download"></i> تنزيل نسخة احتياطية
+                    </a>
+                }
+
+                <h6 class="mt-4">إحصائيات</h6>
+                <table class="table table-bordered table-sm">
+                    <thead>
+                        <tr>
+                            <th>النوع</th>
+                            <th>العدد</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var stat in Model.Stats)
+                        {
+                            <tr>
+                                <td>@stat.Key</td>
+                                <td>@stat.Value</td>
+                            </tr>
+                        }
+                        <tr class="table-info">
+                            <td><strong>المجموع</strong></td>
+                            <td><strong>@Model.Stats.Values.Sum()</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,98 @@
+@page
+@model BarideWeb.Pages.Correspondances.CreateModel
+@{
+    ViewData["Title"] = "إضافة مراسلة";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header card-header-custom">
+                <h5 class="mb-0"><i class="bi bi-plus-circle"></i> إضافة مراسلة جديدة - @Model.TypeLabel</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="Corresp.Type" />
+                    <input type="hidden" asp-for="Corresp.Cid" />
+                    <input type="hidden" asp-for="Corresp.Num" />
+                    <input type="hidden" asp-for="Corresp.NumInterne" />
+
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">الرقم</label>
+                            <input type="text" asp-for="Corresp.Num" class="form-control" readonly />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">الرقم الداخلي</label>
+                            <input type="text" asp-for="Corresp.NumInterne" class="form-control" readonly />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">تاريخ المراسلة</label>
+                            <input type="date" asp-for="Corresp.DateCorresp" class="form-control" />
+                        </div>
+                        @if (Model.Corresp.Type == TypeCorresp.Entrant_Interne || Model.Corresp.Type == TypeCorresp.Entrant_Externe)
+                        {
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">تاريخ الوصول</label>
+                                <input type="date" asp-for="Corresp.DateArrivDepart" class="form-control" />
+                            </div>
+                        }
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">@Model.ExpedLabel</label>
+                            <input type="text" asp-for="Corresp.Expediteur" class="form-control" list="expedList" />
+                            <datalist id="expedList">
+                                @foreach (var e in Model.ExpedSuggestions)
+                                {
+                                    <option value="@e" />
+                                }
+                            </datalist>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">الموضوع</label>
+                            <input type="text" asp-for="Corresp.Objet" class="form-control" list="objetList" />
+                            <datalist id="objetList">
+                                @foreach (var o in Model.ObjetSuggestions)
+                                {
+                                    <option value="@o" />
+                                }
+                            </datalist>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">الصنف</label>
+                            <select asp-for="Corresp.CatId" class="form-select" asp-items="Model.CategoriesList" required>
+                                <option value="">-- اختر الصنف --</option>
+                            </select>
+                            <span asp-validation-for="Corresp.CatId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">ملاحظة</label>
+                            <textarea asp-for="Corresp.Observation" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Documents -->
+                    <div class="mt-4">
+                        <h6 class="fw-bold"><i class="bi bi-paperclip"></i> الوثائق المرفقة</h6>
+                        <input type="file" name="files" multiple class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                        <small class="text-muted">يمكن إرفاق عدة ملفات (الحد الأقصى 20 ميغابايت لكل ملف)</small>
+                    </div>
+
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> حفظ
+                        </button>
+                        <a class="btn btn-secondary" asp-page="/Index" asp-route-type="@((int)(Model.Corresp.Type ?? TypeCorresp.Entrant_Interne))">
+                            <i class="bi bi-x-circle"></i> إلغاء
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

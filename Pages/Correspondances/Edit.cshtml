@@ -1,0 +1,151 @@
+@page "{id:guid}"
+@model BarideWeb.Pages.Correspondances.EditModel
+@{
+    ViewData["Title"] = "مراسلة رقم " + Model.Corresp.Num;
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header card-header-custom">
+                <h5 class="mb-0"><i class="bi bi-envelope-open"></i> مراسلة رقم @Model.Corresp.Num - @Model.TypeLabel</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="Corresp.Cid" />
+                    <input type="hidden" asp-for="Corresp.Type" />
+                    <input type="hidden" asp-for="Corresp.CorrespRep" />
+
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">الرقم</label>
+                            <input type="text" asp-for="Corresp.Num" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">الرقم الداخلي</label>
+                            <input type="text" asp-for="Corresp.NumInterne" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">تاريخ المراسلة</label>
+                            <input type="date" asp-for="Corresp.DateCorresp" class="form-control" />
+                        </div>
+                        @if (Model.Corresp.Type == TypeCorresp.Entrant_Interne || Model.Corresp.Type == TypeCorresp.Entrant_Externe)
+                        {
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">تاريخ الوصول</label>
+                                <input type="date" asp-for="Corresp.DateArrivDepart" class="form-control" />
+                            </div>
+                        }
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">@Model.ExpedLabel</label>
+                            <input type="text" asp-for="Corresp.Expediteur" class="form-control" list="expedList" />
+                            <datalist id="expedList">
+                                @foreach (var e in Model.ExpedSuggestions)
+                                {
+                                    <option value="@e" />
+                                }
+                            </datalist>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">الموضوع</label>
+                            <input type="text" asp-for="Corresp.Objet" class="form-control" list="objetList" />
+                            <datalist id="objetList">
+                                @foreach (var o in Model.ObjetSuggestions)
+                                {
+                                    <option value="@o" />
+                                }
+                            </datalist>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">الصنف</label>
+                            <select asp-for="Corresp.CatId" class="form-select" asp-items="Model.CategoriesList" required>
+                                <option value="">-- اختر الصنف --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">ملاحظة</label>
+                            <textarea asp-for="Corresp.Observation" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Existing documents -->
+                    <div class="mt-4">
+                        <h6 class="fw-bold"><i class="bi bi-paperclip"></i> الوثائق المرفقة</h6>
+                        @if (Model.Documents.Any())
+                        {
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>الوصف</th>
+                                        <th>الملف</th>
+                                        <th>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var doc in Model.Documents)
+                                    {
+                                        <tr>
+                                            <td>@doc.Designation</td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(doc.FileName))
+                                                {
+                                                    <a href="/uploads/@doc.FileName" target="_blank" class="btn btn-sm btn-outline-info">
+                                                        <i class="bi bi-eye"></i> عرض
+                                                    </a>
+                                                }
+                                            </td>
+                                            <td>
+                                                <button type="submit" asp-page-handler="DeleteDoc" name="docId" value="@doc.DocId"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('هل تريد فعلا حذف هذه الوثيقة ؟')">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p class="text-muted">لا توجد وثائق مرفقة</p>
+                        }
+
+                        <label class="form-label mt-2">إضافة وثائق جديدة</label>
+                        <input type="file" name="newFiles" multiple class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                    </div>
+
+                    <!-- PDF Viewer -->
+                    @if (Model.Documents.Any(d => d.FileName != null && d.FileName.EndsWith(".pdf")))
+                    {
+                        <div class="mt-4">
+                            <h6 class="fw-bold"><i class="bi bi-file-earmark-pdf"></i> معاينة الوثيقة</h6>
+                            @{
+                                var firstPdf = Model.Documents.FirstOrDefault(d => d.FileName != null && d.FileName.EndsWith(".pdf"));
+                            }
+                            @if (firstPdf != null)
+                            {
+                                <iframe src="/uploads/@firstPdf.FileName" width="100%" height="500" class="border rounded"></iframe>
+                            }
+                        </div>
+                    }
+
+                    <div class="mt-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> حفظ التعديلات
+                        </button>
+                        <a class="btn btn-secondary" asp-page="/Index" asp-route-type="@((int)Model.Corresp.Type!)">
+                            <i class="bi bi-arrow-right"></i> رجوع
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

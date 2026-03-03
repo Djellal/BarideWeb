@@ -1,0 +1,205 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "الرئيسية";
+}
+
+<div class="card">
+    <div class="card-header card-header-custom d-flex justify-content-between align-items-center flex-wrap">
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            <!-- Add dropdown -->
+            <div class="dropdown">
+                <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-plus-circle"></i> إضافـــة
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="0">وارد داخلي</a></li>
+                    <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="1">وارد خارجي</a></li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="2">صادر داخلي</a></li>
+                    <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="3">صادر خارجي</a></li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="4">متفرقات</a></li>
+                </ul>
+            </div>
+
+            <!-- Print -->
+            <a class="btn btn-info btn-sm text-white" asp-page="/Correspondances/Print" asp-route-type="@((int)Model.CurrentType)">
+                <i class="bi bi-printer"></i> طباعة
+            </a>
+        </div>
+
+        <!-- Search -->
+        <form method="get" class="d-flex gap-2 align-items-center mt-2 mt-lg-0">
+            <input type="hidden" name="type" value="@((int)Model.CurrentType)" />
+            <input type="text" name="search" value="@Model.SearchText" class="form-control form-control-sm search-box" placeholder="بحث..." />
+            <button type="submit" class="btn btn-light btn-sm"><i class="bi bi-search"></i></button>
+            @if (!string.IsNullOrEmpty(Model.SearchText))
+            {
+                <a class="btn btn-outline-light btn-sm" asp-page="/Index" asp-route-type="@((int)Model.CurrentType)">
+                    <i class="bi bi-x-circle"></i>
+                </a>
+            }
+        </form>
+    </div>
+
+    <div class="card-body p-0">
+        <!-- Type tabs -->
+        <ul class="nav nav-tabs type-tabs px-2 pt-2">
+            <li class="nav-item">
+                <a class="nav-link @(Model.CurrentType == TypeCorresp.Entrant_Interne ? "active" : "")"
+                   asp-page="/Index" asp-route-type="0">وارد داخلي</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.CurrentType == TypeCorresp.Entrant_Externe ? "active" : "")"
+                   asp-page="/Index" asp-route-type="1">وارد خارجي</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.CurrentType == TypeCorresp.Sotant_Interne ? "active" : "")"
+                   asp-page="/Index" asp-route-type="2">صادر داخلي</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.CurrentType == TypeCorresp.Sortant_Externe ? "active" : "")"
+                   asp-page="/Index" asp-route-type="3">صادر خارجي</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.CurrentType == TypeCorresp.Divers ? "active" : "")"
+                   asp-page="/Index" asp-route-type="4">متفرقات</a>
+            </li>
+        </ul>
+
+        <!-- Advanced filter toggle -->
+        <div class="px-3 pt-2">
+            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filterPanel">
+                <i class="bi bi-funnel"></i> فرز المراسلات
+            </button>
+        </div>
+
+        <!-- Advanced filter panel -->
+        <div class="collapse px-3 pt-2" id="filterPanel">
+            <form method="get" class="card card-body bg-light">
+                <input type="hidden" name="type" value="@((int)Model.CurrentType)" />
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">الصنف</label>
+                        <select name="catId" class="form-select form-select-sm">
+                            <option value="">-- الكل --</option>
+                            @foreach (var cat in Model.Categories)
+                            {
+                                <option value="@cat.CatId" selected="@(Model.FilterCatId == cat.CatId)">@cat.Designation</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">@Model.ExpedLabel</label>
+                        <input type="text" name="exped" value="@Model.FilterExped" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">الموضوع</label>
+                        <input type="text" name="objet" value="@Model.FilterObjet" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">من تاريخ</label>
+                        <input type="date" name="dateFrom" value="@Model.FilterDateFrom?.ToString("yyyy-MM-dd")" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">إلى تاريخ</label>
+                        <input type="date" name="dateTo" value="@Model.FilterDateTo?.ToString("yyyy-MM-dd")" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-funnel-fill"></i> فرز</button>
+                        <a class="btn btn-secondary btn-sm" asp-page="/Index" asp-route-type="@((int)Model.CurrentType)">إلغاء</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Data table -->
+        <div class="table-responsive mt-2">
+            <table class="table table-striped table-hover table-bordered mb-0">
+                <thead>
+                    <tr>
+                        <th>الرقم</th>
+                        <th>الرقم الداخلي</th>
+                        <th>تاريخ المراسلة</th>
+                        <th>تاريخ الوصول</th>
+                        <th>@Model.ExpedLabel</th>
+                        <th>الموضوع</th>
+                        <th>ملاحظة</th>
+                        <th>الصنف</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Correspondances.Any())
+                    {
+                        @foreach (var c in Model.Correspondances)
+                        {
+                            <tr>
+                                <td>@c.Num</td>
+                                <td>@c.NumInterne</td>
+                                <td>@c.DateCorresp.ToString("d")</td>
+                                <td>@c.DateArrivDepart.ToString("d")</td>
+                                <td>@c.Expediteur</td>
+                                <td>@c.Objet</td>
+                                <td>@c.Observation</td>
+                                <td>@c.Categ?.Designation</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a class="btn btn-outline-primary" asp-page="/Correspondances/View" asp-route-id="@c.Cid" title="عرض">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a class="btn btn-outline-warning" asp-page="/Correspondances/Edit" asp-route-id="@c.Cid" title="تعديل">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@c.Cid" title="حذف">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Delete confirmation modal -->
+                                    <div class="modal fade" id="deleteModal-@c.Cid" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">تأكيد الحذف</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    هل تريد فعلا حذف هذه المراسلة ؟
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لا</button>
+                                                    <form method="post" asp-page-handler="Delete">
+                                                        <input type="hidden" name="id" value="@c.Cid" />
+                                                        <input type="hidden" name="type" value="@((int)Model.CurrentType)" />
+                                                        <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="py-5">
+                                <div class="text-center text-muted">
+                                    <i class="bi bi-inbox" style="font-size: 2.5rem; opacity: 0.3;"></i>
+                                    <p class="mt-2 mb-0">لا توجد مراسلات</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        عدد المراسلات: @Model.Correspondances.Count
+    </div>
+</div>
