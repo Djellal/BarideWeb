@@ -58,6 +58,14 @@
                             </a>
                         </li>
                     }
+                    @if (User.IsInRole("Admin") || User.IsInRole("TenantAdmin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link rounded-pill px-3" asp-page="/Parameters/Index">
+                                <i class="bi bi-gear-fill"></i> الإعدادات
+                            </a>
+                        </li>
+                    }
                     <li class="nav-item">
                         <a class="nav-link rounded-pill px-3" asp-page="/About">
                             <i class="bi bi-info-circle-fill"></i> حول

@@ -23,6 +23,8 @@ namespace BarideWeb.Pages
         public string ExpedLabel { get; set; } = "المرسل";
         public string? SearchText { get; set; }
 
+        public ViewMode CorrespViewMode { get; set; } = ViewMode.NewTab;
+
         // Filter properties
         public Guid? FilterCatId { get; set; }
         public string? FilterExped { get; set; }
@@ -79,6 +81,47 @@ namespace BarideWeb.Pages
                 query = query.Where(c => c.DateCorresp <= dateTo.Value.AddDays(1));
 
             Correspondances = await query.OrderByDescending(c => c.DateArrivDepart).ToListAsync();
+
+            // Load view mode parameter
+            var viewModeParam = await _context.Parameters
+                .FirstOrDefaultAsync(p => p.Key == "CorrespViewMode");
+            if (viewModeParam != null && int.TryParse(viewModeParam.Value, out var vm))
+            {
+                CorrespViewMode = (ViewMode)vm;
+            }
+        }
+
+        public async Task<IActionResult> OnGetViewPartialAsync(Guid id)
+        {
+            var corresp = await _context.Correspondances
+                .Include(c => c.Categ)
+                .FirstOrDefaultAsync(c => c.Cid == id);
+
+            if (corresp == null) return NotFound();
+
+            var documents = await _context.Documents.Where(d => d.Cid == id).ToListAsync();
+
+            var typeLabel = corresp.Type switch
+            {
+                TypeCorresp.Entrant_Interne => "وارد داخلي",
+                TypeCorresp.Entrant_Externe => "وارد خارجي",
+                TypeCorresp.Sotant_Interne => "صادر داخلي",
+                TypeCorresp.Sortant_Externe => "صادر خارجي",
+                TypeCorresp.Divers => "متفرقات",
+                _ => ""
+            };
+
+            var expedLabel = corresp.Type == TypeCorresp.Entrant_Interne || corresp.Type == TypeCorresp.Entrant_Externe
+                ? "المرسل" : "المرسل إليه";
+
+            return Partial("_CorrespView", new CorrespViewData
+            {
+                Corresp = corresp,
+                Documents = documents,
+                TypeLabel = typeLabel,
+                ExpedLabel = expedLabel,
+                IsModal = true
+            });
         }
 
         public async Task<IActionResult> OnPostDeleteAsync(Guid id, int type)

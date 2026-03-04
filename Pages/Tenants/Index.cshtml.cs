@@ -51,6 +51,15 @@ namespace BarideWeb.Pages.Tenants
                     });
                 }
 
+                // Seed default parameters for the new tenant
+                _context.Parameters.Add(new AppParameter
+                {
+                    Key = "CorrespViewMode",
+                    Value = "0",
+                    Description = "طريقة عرض المراسلة: 0=في صفحة جديدة، 1=في نافذة منبثقة، 2=في نفس الصفحة",
+                    TenantId = tenant.TenantId
+                });
+
                 await _context.SaveChangesAsync();
                 return RedirectToPage(new { message = $"تم إضافة المؤسسة: {name}" });
             }
@@ -92,6 +101,10 @@ namespace BarideWeb.Pages.Tenants
                 var cats = await _context.Categories.IgnoreQueryFilters()
                     .Where(c => c.TenantId == tenantId).ToListAsync();
                 _context.Categories.RemoveRange(cats);
+
+                var parameters = await _context.Parameters.IgnoreQueryFilters()
+                    .Where(p => p.TenantId == tenantId).ToListAsync();
+                _context.Parameters.RemoveRange(parameters);
 
                 _context.Tenants.Remove(tenant);
                 await _context.SaveChangesAsync();

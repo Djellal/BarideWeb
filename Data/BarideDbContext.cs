@@ -19,6 +19,7 @@ namespace BarideWeb.Data
         public DbSet<Categorie> Categories { get; set; }
         public DbSet<Corresp> Correspondances { get; set; }
         public DbSet<Doc> Documents { get; set; }
+        public DbSet<AppParameter> Parameters { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -44,9 +45,21 @@ namespace BarideWeb.Data
                 new Categorie { CatId = Guid.Parse("a0000000-0000-0000-0000-00000000000b"), Designation = "التهاني", TenantId = defaultTenantId }
             );
 
+            modelBuilder.Entity<AppParameter>().HasData(
+                new AppParameter
+                {
+                    ParamId = Guid.Parse("c0000000-0000-0000-0000-000000000001"),
+                    Key = "CorrespViewMode",
+                    Value = "0",
+                    Description = "طريقة عرض المراسلة: 0=في صفحة جديدة، 1=في نافذة منبثقة، 2=في نفس الصفحة",
+                    TenantId = defaultTenantId
+                }
+            );
+
             // Global query filters for multi-tenancy
             modelBuilder.Entity<Categorie>().HasQueryFilter(c => _tenantService == null || _tenantService.GetCurrentTenantId() == null || c.TenantId == _tenantService.GetCurrentTenantId());
             modelBuilder.Entity<Corresp>().HasQueryFilter(c => _tenantService == null || _tenantService.GetCurrentTenantId() == null || c.TenantId == _tenantService.GetCurrentTenantId());
+            modelBuilder.Entity<AppParameter>().HasQueryFilter(p => _tenantService == null || _tenantService.GetCurrentTenantId() == null || p.TenantId == _tenantService.GetCurrentTenantId());
         }
 
         public override int SaveChanges()
@@ -72,6 +85,11 @@ namespace BarideWeb.Data
             }
 
             foreach (var entry in ChangeTracker.Entries<Corresp>().Where(e => e.State == EntityState.Added && e.Entity.TenantId == null))
+            {
+                entry.Entity.TenantId = tenantId;
+            }
+
+            foreach (var entry in ChangeTracker.Entries<AppParameter>().Where(e => e.State == EntityState.Added && e.Entity.TenantId == null))
             {
                 entry.Entity.TenantId = tenantId;
             }
