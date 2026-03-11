@@ -32,8 +32,7 @@
 
         <!-- Search -->
         <form method="get" class="d-flex gap-2 align-items-center mt-2 mt-lg-0">
-            <input type="hidden" name="type" value="@((int)Model.CurrentType)" />
-            <input type="text" name="search" value="@Model.SearchText" class="form-control form-control-sm search-box" placeholder="بحث..." />
+            <input type="text" name="search" value="@Model.SearchText" class="form-control form-control-sm search-box" placeholder="بحث في كل المراسلات..." />
             <button type="submit" class="btn btn-light btn-sm"><i class="bi bi-search"></i></button>
             @if (!string.IsNullOrEmpty(Model.SearchText))
             {
@@ -128,6 +127,10 @@
                         <th>الموضوع</th>
                         <th>ملاحظة</th>
                         <th>الصنف</th>
+                        @if (Model.SearchAll)
+                        {
+                            <th>النوع</th>
+                        }
                         <th>الإجراءات</th>
                     </tr>
                 </thead>
@@ -158,6 +161,18 @@
                                 <td>@c.Objet</td>
                                 <td>@c.Observation</td>
                                 <td>@c.Categ?.Designation</td>
+                                @if (Model.SearchAll)
+                                {
+                                    <td>@(c.Type switch
+                                        {
+                                            TypeCorresp.Entrant_Interne => "وارد داخلي",
+                                            TypeCorresp.Entrant_Externe => "وارد خارجي",
+                                            TypeCorresp.Sotant_Interne => "صادر داخلي",
+                                            TypeCorresp.Sortant_Externe => "صادر خارجي",
+                                            TypeCorresp.Divers => "متفرقات",
+                                            _ => ""
+                                        })</td>
+                                }
                                 <td onclick="event.stopPropagation()">
                                     <div class="btn-group btn-group-sm">
                                         <a class="btn btn-outline-primary" asp-page="/Correspondances/View" asp-route-id="@c.Cid" title="عرض">
@@ -200,7 +215,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="9" class="py-5">
+                            <td colspan="@(Model.SearchAll ? 10 : 9)" class="py-5">
                                 <div class="text-center text-muted">
                                     <i class="bi bi-inbox" style="font-size: 2.5rem; opacity: 0.3;"></i>
                                     <p class="mt-2 mb-0">لا توجد مراسلات</p>

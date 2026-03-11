@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -42,7 +43,7 @@ namespace BarideWeb.Pages.Correspondances
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync(List<IFormFile> newFiles)
+        public async Task<IActionResult> OnPostAsync(List<IFormFile> newFiles, string? scannedFilesJson)
         {
             var existing = await _context.Correspondances.FindAsync(Corresp.Cid);
             if (existing == null) return NotFound();
@@ -56,11 +57,12 @@ namespace BarideWeb.Pages.Correspondances
             existing.Observation = Corresp.Observation;
             existing.CatId = Corresp.CatId;
 
-            // Handle new file uploads
             var uploadsDir = Path.Combine(_env.WebRootPath, "uploads");
             Directory.CreateDirectory(uploadsDir);
 
             int pageNum = await _context.Documents.CountAsync(d => d.Cid == Corresp.Cid) + 1;
+
+            // Handle new file uploads
             foreach (var file in newFiles)
             {
                 if (file.Length > 21_000_000) continue;
@@ -84,8 +86,41 @@ namespace BarideWeb.Pages.Correspondances
                 _context.Documents.Add(doc);
             }
 
+            // Handle scanned files from JSPrintManager
+            if (!string.IsNullOrEmpty(scannedFilesJson))
+            {
+                var scannedFiles = JsonSerializer.Deserialize<List<ScannedFileDto>>(scannedFilesJson);
+                if (scannedFiles != null)
+                {
+                    foreach (var sf in scannedFiles)
+                    {
+                        var doc = new Doc
+                        {
+                            DocId = Guid.NewGuid(),
+                            Cid = Corresp.Cid,
+                            Designation = "الصفحة " + pageNum++
+                        };
+
+                        var ext = Path.GetExtension(sf.Name);
+                        doc.FileName = doc.DocId + ext;
+
+                        var bytes = Convert.FromBase64String(sf.DataUrl.Substring(sf.DataUrl.IndexOf(',') + 1));
+                        var filePath = Path.Combine(uploadsDir, doc.FileName);
+                        await System.IO.File.WriteAllBytesAsync(filePath, bytes);
+
+                        _context.Documents.Add(doc);
+                    }
+                }
+            }
+
             await _context.SaveChangesAsync();
             return RedirectToPage("/Correspondances/Edit", new { id = Corresp.Cid });
+        }
+
+        private class ScannedFileDto
+        {
+            public string Name { get; set; } = "";
+            public string DataUrl { get; set; } = "";
         }
 
         public async Task<IActionResult> OnPostDeleteDocAsync(Guid docId)

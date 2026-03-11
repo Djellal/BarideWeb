@@ -22,6 +22,7 @@ namespace BarideWeb.Pages
         public TypeCorresp CurrentType { get; set; } = TypeCorresp.Entrant_Interne;
         public string ExpedLabel { get; set; } = "المرسل";
         public string? SearchText { get; set; }
+        public bool SearchAll { get; set; }
 
         public ViewMode CorrespViewMode { get; set; } = ViewMode.NewTab;
 
@@ -49,11 +50,10 @@ namespace BarideWeb.Pages
 
             Categories = await _context.Categories.ToListAsync();
 
-            var query = _context.Correspondances
-                .Include(c => c.Categ)
-                .Where(c => c.Type == CurrentType);
+            IQueryable<Corresp> query = _context.Correspondances
+                .Include(c => c.Categ);
 
-            // Text search
+            // Text search across all types, or filter by current type
             if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(c =>
@@ -62,6 +62,11 @@ namespace BarideWeb.Pages
                     c.Expediteur.Contains(search) ||
                     c.Objet.Contains(search) ||
                     (c.Observation != null && c.Observation.Contains(search)));
+                SearchAll = true;
+            }
+            else
+            {
+                query = query.Where(c => c.Type == CurrentType);
             }
 
             // Advanced filters

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -42,7 +43,7 @@ namespace BarideWeb.Pages.Correspondances
             await LoadFormData();
         }
 
-        public async Task<IActionResult> OnPostAsync(List<IFormFile> files)
+        public async Task<IActionResult> OnPostAsync(List<IFormFile> files, string? scannedFilesJson)
         {
             if (Corresp.CatId == Guid.Empty)
             {
@@ -53,11 +54,12 @@ namespace BarideWeb.Pages.Correspondances
 
             _context.Correspondances.Add(Corresp);
 
-            // Handle file uploads
             var uploadsDir = Path.Combine(_env.WebRootPath, "uploads");
             Directory.CreateDirectory(uploadsDir);
 
             int pageNum = 1;
+
+            // Handle file uploads
             foreach (var file in files)
             {
                 if (file.Length > 21_000_000) continue;
@@ -81,8 +83,41 @@ namespace BarideWeb.Pages.Correspondances
                 _context.Documents.Add(doc);
             }
 
+            // Handle scanned files from JSPrintManager
+            if (!string.IsNullOrEmpty(scannedFilesJson))
+            {
+                var scannedFiles = JsonSerializer.Deserialize<List<ScannedFileDto>>(scannedFilesJson);
+                if (scannedFiles != null)
+                {
+                    foreach (var sf in scannedFiles)
+                    {
+                        var doc = new Doc
+                        {
+                            DocId = Guid.NewGuid(),
+                            Cid = Corresp.Cid,
+                            Designation = "الصفحة " + pageNum++
+                        };
+
+                        var ext = Path.GetExtension(sf.Name);
+                        doc.FileName = doc.DocId + ext;
+
+                        var bytes = Convert.FromBase64String(sf.DataUrl.Substring(sf.DataUrl.IndexOf(',') + 1));
+                        var filePath = Path.Combine(uploadsDir, doc.FileName);
+                        await System.IO.File.WriteAllBytesAsync(filePath, bytes);
+
+                        _context.Documents.Add(doc);
+                    }
+                }
+            }
+
             await _context.SaveChangesAsync();
             return RedirectToPage("/Index", new { type = (int)Corresp.Type! });
+        }
+
+        private class ScannedFileDto
+        {
+            public string Name { get; set; } = "";
+            public string DataUrl { get; set; } = "";
         }
 
         private async Task LoadFormData()

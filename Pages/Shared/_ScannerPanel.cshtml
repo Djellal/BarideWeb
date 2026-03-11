@@ -1,0 +1,206 @@
+<!-- Scanner Panel - Neodynamic JSPrintManager -->
+<div class="mt-4">
+    <h6 class="fw-bold"><i class="bi bi-upc-scan"></i> المسح الضوئي</h6>
+
+    <div id="scannerPanel">
+        <div id="jspmStatus" class="alert alert-warning d-flex align-items-center gap-2">
+            <div class="spinner-border spinner-border-sm" role="status"></div>
+            <span>جاري الاتصال بخدمة المسح الضوئي...</span>
+        </div>
+
+        <div id="scannerControls" style="display:none;">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">الماسح الضوئي</label>
+                    <select id="scannerList" class="form-select form-select-sm"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">الدقة (DPI)</label>
+                    <select id="scanDpi" class="form-select form-select-sm">
+                        <option value="100">100</option>
+                        <option value="150">150</option>
+                        <option value="200" selected>200</option>
+                        <option value="300">300</option>
+                        <option value="600">600</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">اللون</label>
+                    <select id="scanPixelMode" class="form-select form-select-sm">
+                        <option value="Color">ألوان</option>
+                        <option value="Grayscale" selected>رمادي</option>
+                        <option value="BlackAndWhite">أبيض وأسود</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">الصيغة</label>
+                    <select id="scanFormat" class="form-select form-select-sm">
+                        <option value="JPG">JPG</option>
+                        <option value="PNG">PNG</option>
+                        <option value="PDF">PDF</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="button" class="btn btn-primary btn-sm" id="btnScan" onclick="doScan()">
+                        <i class="bi bi-upc-scan"></i> مسح ضوئي
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scanned images preview -->
+            <div id="scannedImagesContainer" class="mt-3" style="display:none;">
+                <label class="form-label fw-bold">الصفحات الممسوحة</label>
+                <div id="scannedImagesList" class="d-flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden file input to hold scanned files for form submission -->
+<input type="hidden" name="scannedFilesJson" id="scannedFilesJson" />
+
+<script src="~/js/JSPrintManager.js"></script>
+<script>
+    var scannedFiles = []; // array of { name, dataUrl }
+
+    // Initialize JSPrintManager
+    function initJSPM() {
+        JSPM.JSPrintManager.auto_reconnect = true;
+        JSPM.JSPrintManager.start()
+            .then(function () {
+                if (jspmWSStatus()) {
+                    // Connected
+                    document.getElementById('jspmStatus').className = 'alert alert-success';
+                    document.getElementById('jspmStatus').innerHTML = '<i class="bi bi-check-circle"></i> خدمة المسح الضوئي متصلة';
+                    document.getElementById('scannerControls').style.display = '';
+                    // Get scanners
+                    JSPM.JSPrintManager.getScanners().then(function (scanners) {
+                        var sel = document.getElementById('scannerList');
+                        sel.innerHTML = '';
+                        if (scanners && scanners.length > 0) {
+                            for (var i = 0; i < scanners.length; i++) {
+                                var opt = document.createElement('option');
+                                opt.value = scanners[i];
+                                opt.textContent = scanners[i];
+                                sel.appendChild(opt);
+                            }
+                        } else {
+                            var opt = document.createElement('option');
+                            opt.textContent = 'لا يوجد ماسح ضوئي';
+                            sel.appendChild(opt);
+                            document.getElementById('btnScan').disabled = true;
+                        }
+                    });
+                }
+            })
+            .catch(function (e) {
+                document.getElementById('jspmStatus').className = 'alert alert-danger';
+                document.getElementById('jspmStatus').innerHTML =
+                    '<i class="bi bi-exclamation-triangle"></i> تعذر الاتصال بخدمة المسح الضوئي. ' +
+                    '<a href="https://www.neodynamic.com/downloads/jspm/" target="_blank">تحميل تطبيق JSPrintManager</a>';
+            });
+    }
+
+    function jspmWSStatus() {
+        return JSPM.JSPrintManager.websocket_status === JSPM.WSStatus.Open;
+    }
+
+    function doScan() {
+        if (!jspmWSStatus()) return;
+
+        var scannerName = document.getElementById('scannerList').value;
+        if (!scannerName) return;
+
+        var btn = document.getElementById('btnScan');
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> جاري المسح...';
+
+        var csj = new JSPM.ClientScanJob();
+        csj.scannerName = scannerName;
+        csj.resolution = parseInt(document.getElementById('scanDpi').value);
+        csj.pixelMode = JSPM.PixelMode[document.getElementById('scanPixelMode').value];
+        csj.imageFormat = JSPM.ScannerImageFormatOutput[document.getElementById('scanFormat').value];
+
+        var imgFormat = document.getElementById('scanFormat').value;
+
+        csj.onUpdate = function (data, last) {
+            if (!(data instanceof Blob)) return;
+            if (data.size === 0) return;
+
+            var reader = new FileReader();
+            reader.onload = function () {
+                var idx = scannedFiles.length + 1;
+                var ext = imgFormat.toLowerCase();
+                if (ext === 'jpg') ext = 'jpg';
+                scannedFiles.push({ name: 'scan_' + idx + '.' + ext, dataUrl: reader.result });
+                updateScannedFilesJson();
+                renderScannedImages();
+            };
+            reader.readAsDataURL(data);
+
+            if (last) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-upc-scan"></i> مسح ضوئي';
+            }
+        };
+
+        csj.onError = function (data, is_critical) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-upc-scan"></i> مسح ضوئي';
+            alert('خطأ في المسح الضوئي: ' + data);
+        };
+
+        csj.sendToClient();
+    }
+
+    function updateScannedFilesJson() {
+        document.getElementById('scannedFilesJson').value = JSON.stringify(scannedFiles);
+    }
+
+    function removeScannedFile(idx) {
+        scannedFiles.splice(idx, 1);
+        updateScannedFilesJson();
+        renderScannedImages();
+    }
+
+    function renderScannedImages() {
+        var container = document.getElementById('scannedImagesContainer');
+        var list = document.getElementById('scannedImagesList');
+        if (scannedFiles.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+        container.style.display = '';
+        list.innerHTML = '';
+        for (var i = 0; i < scannedFiles.length; i++) {
+            var div = document.createElement('div');
+            div.className = 'position-relative border rounded p-1';
+            div.style.width = '120px';
+
+            var ext = scannedFiles[i].name.split('.').pop().toLowerCase();
+            if (ext === 'pdf') {
+                div.innerHTML =
+                    '<div class="text-center p-3"><i class="bi bi-file-earmark-pdf" style="font-size:2rem; color:#dc3545;"></i>' +
+                    '<p class="small mb-0">' + scannedFiles[i].name + '</p></div>';
+            } else {
+                div.innerHTML =
+                    '<img src="' + scannedFiles[i].dataUrl + '" class="img-fluid rounded" style="max-height:100px;" />' +
+                    '<p class="small text-center mb-0">' + scannedFiles[i].name + '</p>';
+            }
+
+            var btnDel = document.createElement('button');
+            btnDel.type = 'button';
+            btnDel.className = 'btn btn-danger btn-sm position-absolute top-0 end-0 p-0';
+            btnDel.style.cssText = 'width:20px; height:20px; line-height:1; font-size:0.7rem;';
+            btnDel.innerHTML = '<i class="bi bi-x"></i>';
+            btnDel.setAttribute('data-idx', i);
+            btnDel.onclick = function () { removeScannedFile(parseInt(this.getAttribute('data-idx'))); };
+            div.appendChild(btnDel);
+
+            list.appendChild(div);
+        }
+    }
+
+    // Init on page load
+    initJSPM();
+</script>

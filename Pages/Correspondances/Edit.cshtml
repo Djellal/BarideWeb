@@ -121,6 +121,9 @@
                         <input type="file" name="newFiles" multiple class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
                     </div>
 
+                    <!-- Scanner -->
+                    <partial name="_ScannerPanel" />
+
                     <!-- PDF Viewer -->
                     @if (Model.Documents.Any(d => d.FileName != null && d.FileName.EndsWith(".pdf")))
                     {
