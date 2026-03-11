@@ -3,11 +3,61 @@
     <h6 class="fw-bold"><i class="bi bi-upc-scan"></i> المسح الضوئي</h6>
 
     <div id="scannerPanel">
+        <!-- Status: checking -->
         <div id="jspmStatus" class="alert alert-warning d-flex align-items-center gap-2">
             <div class="spinner-border spinner-border-sm" role="status"></div>
             <span>جاري الاتصال بخدمة المسح الضوئي...</span>
         </div>
 
+        <!-- Status: closed / not installed -->
+        <div id="jspmClosed" class="alert alert-danger" style="display:none;">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                <strong>تطبيق المسح الضوئي غير مثبّت أو لا يعمل</strong>
+            </div>
+            <p class="mb-2">
+                لاستخدام الماسح الضوئي، يجب تثبيت وتشغيل تطبيق <strong>JSPrintManager</strong> على جهازك.
+                هذا التطبيق صغير الحجم ولا يحتاج إلى أي متطلبات إضافية.
+            </p>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="https://www.neodynamic.com/downloads/jspm/" target="_blank" class="btn btn-danger btn-sm">
+                    <i class="bi bi-download"></i> تحميل لنظام Windows
+                </a>
+                <a href="https://www.neodynamic.com/downloads/jspm/" target="_blank" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-download"></i> تحميل لنظام Linux / Mac
+                </a>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="initJSPM()">
+                    <i class="bi bi-arrow-clockwise"></i> إعادة المحاولة
+                </button>
+            </div>
+        </div>
+
+        <!-- Status: blocked -->
+        <div id="jspmBlocked" class="alert alert-warning" style="display:none;">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-shield-exclamation fs-4"></i>
+                <div>
+                    <strong>هذا الموقع محظور من طرف تطبيق JSPrintManager</strong>
+                    <p class="mb-0 mt-1">يرجى فتح تطبيق JSPrintManager والسماح لهذا الموقع بالوصول.</p>
+                </div>
+            </div>
+            <button type="button" class="btn btn-outline-warning btn-sm mt-2" onclick="initJSPM()">
+                <i class="bi bi-arrow-clockwise"></i> إعادة المحاولة
+            </button>
+        </div>
+
+        <!-- Status: waiting for user response -->
+        <div id="jspmWaiting" class="alert alert-info" style="display:none;">
+            <div class="d-flex align-items-center gap-2">
+                <div class="spinner-border spinner-border-sm" role="status"></div>
+                <div>
+                    <strong>في انتظار ردّ المستخدم...</strong>
+                    <p class="mb-0 mt-1">يرجى الموافقة على طلب الوصول في تطبيق JSPrintManager.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scanner controls -->
         <div id="scannerControls" style="display:none;">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
@@ -40,69 +90,105 @@
                         <option value="PDF">PDF</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-3 d-flex gap-2">
                     <button type="button" class="btn btn-primary btn-sm" id="btnScan" onclick="doScan()">
                         <i class="bi bi-upc-scan"></i> مسح ضوئي
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="btnClearScans" onclick="clearAllScans()" style="display:none;">
+                        <i class="bi bi-trash"></i> مسح الكل
                     </button>
                 </div>
             </div>
 
             <!-- Scanned images preview -->
             <div id="scannedImagesContainer" class="mt-3" style="display:none;">
-                <label class="form-label fw-bold">الصفحات الممسوحة</label>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="form-label fw-bold mb-0">
+                        الصفحات الممسوحة (<span id="scannedCount">0</span>)
+                    </label>
+                </div>
                 <div id="scannedImagesList" class="d-flex flex-wrap gap-2"></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Hidden file input to hold scanned files for form submission -->
+<!-- Hidden input to hold scanned files for form submission -->
 <input type="hidden" name="scannedFilesJson" id="scannedFilesJson" />
 
 <script src="~/js/JSPrintManager.js"></script>
 <script>
-    var scannedFiles = []; // array of { name, dataUrl }
+    var scannedFiles = [];
 
-    // Initialize JSPrintManager
+    function hideAllStatusPanels() {
+        document.getElementById('jspmStatus').style.display = 'none';
+        document.getElementById('jspmClosed').style.display = 'none';
+        document.getElementById('jspmBlocked').style.display = 'none';
+        document.getElementById('jspmWaiting').style.display = 'none';
+        document.getElementById('scannerControls').style.display = 'none';
+    }
+
+    function showJspmStatus() {
+        hideAllStatusPanels();
+        var status = JSPM.JSPrintManager.websocket_status;
+
+        if (status === JSPM.WSStatus.Open) {
+            var el = document.getElementById('jspmStatus');
+            el.style.display = '';
+            el.className = 'alert alert-success d-flex align-items-center gap-2';
+            el.innerHTML = '<i class="bi bi-check-circle-fill"></i> <span>خدمة المسح الضوئي متصلة</span>';
+            document.getElementById('scannerControls').style.display = '';
+            loadScanners();
+        } else if (status === JSPM.WSStatus.Blocked) {
+            document.getElementById('jspmBlocked').style.display = '';
+        } else if (status === JSPM.WSStatus.WaitingForUserResponse) {
+            document.getElementById('jspmWaiting').style.display = '';
+        } else {
+            document.getElementById('jspmClosed').style.display = '';
+        }
+    }
+
     function initJSPM() {
+        hideAllStatusPanels();
+        var statusEl = document.getElementById('jspmStatus');
+        statusEl.style.display = '';
+        statusEl.className = 'alert alert-warning d-flex align-items-center gap-2';
+        statusEl.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div><span>جاري الاتصال بخدمة المسح الضوئي...</span>';
+
         JSPM.JSPrintManager.auto_reconnect = true;
         JSPM.JSPrintManager.start()
             .then(function () {
-                if (jspmWSStatus()) {
-                    // Connected
-                    document.getElementById('jspmStatus').className = 'alert alert-success';
-                    document.getElementById('jspmStatus').innerHTML = '<i class="bi bi-check-circle"></i> خدمة المسح الضوئي متصلة';
-                    document.getElementById('scannerControls').style.display = '';
-                    // Get scanners
-                    JSPM.JSPrintManager.getScanners().then(function (scanners) {
-                        var sel = document.getElementById('scannerList');
-                        sel.innerHTML = '';
-                        if (scanners && scanners.length > 0) {
-                            for (var i = 0; i < scanners.length; i++) {
-                                var opt = document.createElement('option');
-                                opt.value = scanners[i];
-                                opt.textContent = scanners[i];
-                                sel.appendChild(opt);
-                            }
-                        } else {
-                            var opt = document.createElement('option');
-                            opt.textContent = 'لا يوجد ماسح ضوئي';
-                            sel.appendChild(opt);
-                            document.getElementById('btnScan').disabled = true;
-                        }
-                    });
-                }
+                showJspmStatus();
             })
-            .catch(function (e) {
-                document.getElementById('jspmStatus').className = 'alert alert-danger';
-                document.getElementById('jspmStatus').innerHTML =
-                    '<i class="bi bi-exclamation-triangle"></i> تعذر الاتصال بخدمة المسح الضوئي. ' +
-                    '<a href="https://www.neodynamic.com/downloads/jspm/" target="_blank">تحميل تطبيق JSPrintManager</a>';
+            .catch(function () {
+                hideAllStatusPanels();
+                document.getElementById('jspmClosed').style.display = '';
             });
     }
 
     function jspmWSStatus() {
         return JSPM.JSPrintManager.websocket_status === JSPM.WSStatus.Open;
+    }
+
+    function loadScanners() {
+        JSPM.JSPrintManager.getScanners().then(function (scanners) {
+            var sel = document.getElementById('scannerList');
+            sel.innerHTML = '';
+            if (scanners && scanners.length > 0) {
+                for (var i = 0; i < scanners.length; i++) {
+                    var opt = document.createElement('option');
+                    opt.value = scanners[i];
+                    opt.textContent = scanners[i];
+                    sel.appendChild(opt);
+                }
+                document.getElementById('btnScan').disabled = false;
+            } else {
+                var opt = document.createElement('option');
+                opt.textContent = 'لا يوجد ماسح ضوئي';
+                sel.appendChild(opt);
+                document.getElementById('btnScan').disabled = true;
+            }
+        });
     }
 
     function doScan() {
@@ -131,7 +217,6 @@
             reader.onload = function () {
                 var idx = scannedFiles.length + 1;
                 var ext = imgFormat.toLowerCase();
-                if (ext === 'jpg') ext = 'jpg';
                 scannedFiles.push({ name: 'scan_' + idx + '.' + ext, dataUrl: reader.result });
                 updateScannedFilesJson();
                 renderScannedImages();
@@ -163,15 +248,27 @@
         renderScannedImages();
     }
 
+    function clearAllScans() {
+        scannedFiles = [];
+        updateScannedFilesJson();
+        renderScannedImages();
+    }
+
     function renderScannedImages() {
         var container = document.getElementById('scannedImagesContainer');
         var list = document.getElementById('scannedImagesList');
+        var btnClear = document.getElementById('btnClearScans');
+        document.getElementById('scannedCount').textContent = scannedFiles.length;
+
         if (scannedFiles.length === 0) {
             container.style.display = 'none';
+            btnClear.style.display = 'none';
             return;
         }
         container.style.display = '';
+        btnClear.style.display = '';
         list.innerHTML = '';
+
         for (var i = 0; i < scannedFiles.length; i++) {
             var div = document.createElement('div');
             div.className = 'position-relative border rounded p-1';
@@ -201,6 +298,5 @@
         }
     }
 
-    // Init on page load
     initJSPM();
 </script>
