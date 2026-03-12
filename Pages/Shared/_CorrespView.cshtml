@@ -137,6 +137,11 @@
 </div>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var first = document.querySelector('.doc-list .doc-item[onclick]');
+        if (first) first.click();
+    });
+
     if (typeof selectDocument === 'undefined') {
         function selectDocument(el, url) {
             var container = el.closest('.row');

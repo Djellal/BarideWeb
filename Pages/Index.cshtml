@@ -114,117 +114,30 @@
             </form>
         </div>
 
-        <!-- Data table -->
-        <div class="table-responsive mt-2">
-            <table class="table table-striped table-hover table-bordered mb-0">
-                <thead>
-                    <tr>
-                        <th>الرقم</th>
-                        <th>الرقم الداخلي</th>
-                        <th>تاريخ المراسلة</th>
-                        <th>تاريخ الوصول</th>
-                        <th>@Model.ExpedLabel</th>
-                        <th>الموضوع</th>
-                        <th>ملاحظة</th>
-                        <th>الصنف</th>
-                        @if (Model.SearchAll)
-                        {
-                            <th>النوع</th>
-                        }
-                        <th>الإجراءات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.Correspondances.Any())
-                    {
-                        @foreach (var c in Model.Correspondances)
-                        {
-                            <tr style="cursor:pointer"
-                                @if (Model.CorrespViewMode == ViewMode.NewTab)
-                                {
-                                    <text>onclick="window.open('@Url.Page("/Correspondances/View", new { id = c.Cid })', '_blank')"</text>
-                                }
-                                else if (Model.CorrespViewMode == ViewMode.Modal)
-                                {
-                                    <text>onclick="loadViewModal('@c.Cid')"</text>
-                                }
-                                else
-                                {
-                                    <text>onclick="window.location.href='@Url.Page("/Correspondances/View", new { id = c.Cid })'"</text>
-                                }
-                            >
-                                <td>@c.Num</td>
-                                <td>@c.NumInterne</td>
-                                <td>@c.DateCorresp.ToString("d")</td>
-                                <td>@c.DateArrivDepart.ToString("d")</td>
-                                <td>@c.Expediteur</td>
-                                <td>@c.Objet</td>
-                                <td>@c.Observation</td>
-                                <td>@c.Categ?.Designation</td>
-                                @if (Model.SearchAll)
-                                {
-                                    <td>@(c.Type switch
-                                        {
-                                            TypeCorresp.Entrant_Interne => "وارد داخلي",
-                                            TypeCorresp.Entrant_Externe => "وارد خارجي",
-                                            TypeCorresp.Sotant_Interne => "صادر داخلي",
-                                            TypeCorresp.Sortant_Externe => "صادر خارجي",
-                                            TypeCorresp.Divers => "متفرقات",
-                                            _ => ""
-                                        })</td>
-                                }
-                                <td onclick="event.stopPropagation()">
-                                    <div class="btn-group btn-group-sm">
-                                        <a class="btn btn-outline-primary" asp-page="/Correspondances/View" asp-route-id="@c.Cid" title="عرض">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <a class="btn btn-outline-warning" asp-page="/Correspondances/Edit" asp-route-id="@c.Cid" title="تعديل">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@c.Cid" title="حذف">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
+        <!-- AG Grid -->
+        <div id="correspGrid" class="ag-theme-alpine mt-2" style="width: 100%; height: 500px;"></div>
 
-                                    <!-- Delete confirmation modal -->
-                                    <div class="modal fade" id="deleteModal-@c.Cid" tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">تأكيد الحذف</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    هل تريد فعلا حذف هذه المراسلة ؟
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لا</button>
-                                                    <form method="post" asp-page-handler="Delete">
-                                                        <input type="hidden" name="id" value="@c.Cid" />
-                                                        <input type="hidden" name="type" value="@((int)Model.CurrentType)" />
-                                                        <button type="submit" class="btn btn-danger">نعم، حذف</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="@(Model.SearchAll ? 10 : 9)" class="py-5">
-                                <div class="text-center text-muted">
-                                    <i class="bi bi-inbox" style="font-size: 2.5rem; opacity: 0.3;"></i>
-                                    <p class="mt-2 mb-0">لا توجد مراسلات</p>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <!-- Delete confirmation modal (shared) -->
+        <div class="modal fade" id="deleteModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">تأكيد الحذف</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        هل تريد فعلا حذف هذه المراسلة ؟
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لا</button>
+                        <form method="post" asp-page-handler="Delete">
+                            <input type="hidden" name="id" id="deleteId" />
+                            <input type="hidden" name="type" value="@((int)Model.CurrentType)" />
+                            <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -251,7 +164,9 @@
             </div>
         </div>
     </div>
+}
 
+@section Scripts {
     <script>
         function selectDocument(el, url) {
             var container = el.closest('.row');
@@ -285,5 +200,91 @@
                     body.innerHTML = html;
                 });
         }
+
+        function confirmDelete(cid) {
+            document.getElementById('deleteId').value = cid;
+            var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+
+        var viewMode = @((int)Model.CorrespViewMode);
+        var searchAll = @(Model.SearchAll ? "true" : "false");
+
+        var rowData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Correspondances.Select(c => new {
+            cid = c.Cid,
+            num = c.Num,
+            numInterne = c.NumInterne,
+            dateCorresp = c.DateCorresp.ToString("yyyy-MM-dd"),
+            dateArrivDepart = c.DateArrivDepart.ToString("yyyy-MM-dd"),
+            expediteur = c.Expediteur,
+            objet = c.Objet,
+            observation = c.Observation ?? "",
+            categorie = c.Categ != null ? c.Categ.Designation : "",
+            typeLabel = c.Type switch {
+                TypeCorresp.Entrant_Interne => "وارد داخلي",
+                TypeCorresp.Entrant_Externe => "وارد خارجي",
+                TypeCorresp.Sotant_Interne => "صادر داخلي",
+                TypeCorresp.Sortant_Externe => "صادر خارجي",
+                TypeCorresp.Divers => "متفرقات",
+                _ => ""
+            },
+            viewUrl = Url.Page("/Correspondances/View", new { id = c.Cid }),
+            editUrl = Url.Page("/Correspondances/Edit", new { id = c.Cid })
+        })));
+
+        var columnDefs = [
+            { field: 'num', headerName: 'الرقم', filter: true, sortable: true, minWidth: 100 },
+            { field: 'numInterne', headerName: 'الرقم الداخلي', filter: true, sortable: true, minWidth: 120 },
+            { field: 'dateCorresp', headerName: 'تاريخ المراسلة', filter: 'agDateColumnFilter', sortable: true, minWidth: 130 },
+            { field: 'dateArrivDepart', headerName: 'تاريخ الوصول', filter: 'agDateColumnFilter', sortable: true, minWidth: 130 },
+            { field: 'expediteur', headerName: '@Model.ExpedLabel', filter: true, sortable: true, minWidth: 150, flex: 1 },
+            { field: 'objet', headerName: 'الموضوع', filter: true, sortable: true, minWidth: 200, flex: 2 },
+            { field: 'observation', headerName: 'ملاحظة', filter: true, sortable: true, minWidth: 130 },
+            { field: 'categorie', headerName: 'الصنف', filter: true, sortable: true, minWidth: 120 }
+        ];
+
+        if (searchAll) {
+            columnDefs.push({ field: 'typeLabel', headerName: 'النوع', filter: true, sortable: true, minWidth: 110 });
+        }
+
+        columnDefs.push({
+            headerName: 'الإجراءات',
+            minWidth: 140,
+            sortable: false,
+            filter: false,
+            cellRenderer: function (params) {
+                return '<div class="btn-group btn-group-sm">'
+                    + '<a class="btn btn-outline-primary" href="' + params.data.viewUrl + '" title="عرض"><i class="bi bi-eye"></i></a>'
+                    + '<a class="btn btn-outline-warning" href="' + params.data.editUrl + '" title="تعديل"><i class="bi bi-pencil"></i></a>'
+                    + '<button type="button" class="btn btn-outline-danger" onclick="confirmDelete(\'' + params.data.cid + '\')" title="حذف"><i class="bi bi-trash"></i></button>'
+                    + '</div>';
+            }
+        });
+
+        var gridOptions = {
+            columnDefs: columnDefs,
+            rowData: rowData,
+            defaultColDef: {
+                resizable: true
+            },
+            enableRtl: true,
+            animateRows: true,
+            rowSelection: 'single',
+            overlayNoRowsTemplate: '<div class="text-center text-muted py-5"><i class="bi bi-inbox" style="font-size: 2.5rem; opacity: 0.3;"></i><p class="mt-2 mb-0">لا توجد مراسلات</p></div>',
+            onRowClicked: function (event) {
+                if (event.event.target.closest('.btn-group')) return;
+                var cid = event.data.cid;
+                if (viewMode === 1) {
+                    loadViewModal(cid);
+                } else if (viewMode === 0) {
+                    window.open(event.data.viewUrl, '_blank');
+                } else {
+                    window.location.href = event.data.viewUrl;
+                }
+            }
+        };
+
+        var gridDiv = document.getElementById('correspGrid');
+        new agGrid.Grid(gridDiv, gridOptions);
     </script>
 }
