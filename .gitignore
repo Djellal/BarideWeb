@@ -14,11 +14,6 @@ obj/
 ## JetBrains Rider
 .idea/
 
-## SQLite databases
-*.db
-*.db-shm
-*.db-wal
-
 ## ASP.NET uploads
 wwwroot/uploads/
 
