@@ -1,59 +1,36 @@
-<!-- Scanner Panel - Neodynamic JSPrintManager -->
+<!-- Scanner Panel - Dynamsoft Dynamic Web TWAIN -->
 <div class="mt-4">
     <h6 class="fw-bold"><i class="bi bi-upc-scan"></i> المسح الضوئي</h6>
 
     <div id="scannerPanel">
         <!-- Status: checking -->
-        <div id="jspmStatus" class="alert alert-warning d-flex align-items-center gap-2">
+        <div id="dwtStatus" class="alert alert-warning d-flex align-items-center gap-2">
             <div class="spinner-border spinner-border-sm" role="status"></div>
-            <span>جاري الاتصال بخدمة المسح الضوئي...</span>
+            <span>جاري تهيئة خدمة المسح الضوئي...</span>
         </div>
 
-        <!-- Status: closed / not installed -->
-        <div id="jspmClosed" class="alert alert-danger" style="display:none;">
+        <!-- Status: not installed -->
+        <div id="dwtNotInstalled" class="alert alert-danger" style="display:none;">
             <div class="d-flex align-items-center gap-2 mb-2">
                 <i class="bi bi-exclamation-triangle-fill fs-4"></i>
-                <strong>تطبيق المسح الضوئي غير مثبّت أو لا يعمل</strong>
+                <strong>خدمة المسح الضوئي غير مثبّتة أو لا تعمل</strong>
             </div>
             <p class="mb-2">
-                لاستخدام الماسح الضوئي، يجب تثبيت وتشغيل تطبيق <strong>JSPrintManager</strong> على جهازك.
-                هذا التطبيق صغير الحجم ولا يحتاج إلى أي متطلبات إضافية.
+                لاستخدام الماسح الضوئي، يجب تثبيت وتشغيل خدمة <strong>Dynamsoft Service</strong> على جهازك.
             </p>
             <div class="d-flex gap-2 flex-wrap">
-                <a href="https://www.neodynamic.com/downloads/jspm/" target="_blank" class="btn btn-danger btn-sm">
+                <a href="/Dynamic-Web-TWAIN-19.3.2/dist/dist/DynamicWebTWAINServiceSetup.msi" class="btn btn-danger btn-sm">
                     <i class="bi bi-download"></i> تحميل لنظام Windows
                 </a>
-                <a href="https://www.neodynamic.com/downloads/jspm/" target="_blank" class="btn btn-outline-danger btn-sm">
-                    <i class="bi bi-download"></i> تحميل لنظام Linux / Mac
+                <a href="/Dynamic-Web-TWAIN-19.3.2/dist/dist/DynamicWebTWAINServiceSetup.deb" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-download"></i> تحميل لنظام Linux (deb)
                 </a>
-                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="initJSPM()">
+                <a href="/Dynamic-Web-TWAIN-19.3.2/dist/dist/DynamicWebTWAINServiceSetup.pkg" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-download"></i> تحميل لنظام Mac
+                </a>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="location.reload()">
                     <i class="bi bi-arrow-clockwise"></i> إعادة المحاولة
                 </button>
-            </div>
-        </div>
-
-        <!-- Status: blocked -->
-        <div id="jspmBlocked" class="alert alert-warning" style="display:none;">
-            <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-shield-exclamation fs-4"></i>
-                <div>
-                    <strong>هذا الموقع محظور من طرف تطبيق JSPrintManager</strong>
-                    <p class="mb-0 mt-1">يرجى فتح تطبيق JSPrintManager والسماح لهذا الموقع بالوصول.</p>
-                </div>
-            </div>
-            <button type="button" class="btn btn-outline-warning btn-sm mt-2" onclick="initJSPM()">
-                <i class="bi bi-arrow-clockwise"></i> إعادة المحاولة
-            </button>
-        </div>
-
-        <!-- Status: waiting for user response -->
-        <div id="jspmWaiting" class="alert alert-info" style="display:none;">
-            <div class="d-flex align-items-center gap-2">
-                <div class="spinner-border spinner-border-sm" role="status"></div>
-                <div>
-                    <strong>في انتظار ردّ المستخدم...</strong>
-                    <p class="mb-0 mt-1">يرجى الموافقة على طلب الوصول في تطبيق JSPrintManager.</p>
-                </div>
             </div>
         </div>
 
@@ -77,21 +54,21 @@
                 <div class="col-md-2">
                     <label class="form-label">اللون</label>
                     <select id="scanPixelMode" class="form-select form-select-sm">
-                        <option value="Color">ألوان</option>
-                        <option value="Grayscale" selected>رمادي</option>
-                        <option value="BlackAndWhite">أبيض وأسود</option>
+                        <option value="2">ألوان</option>
+                        <option value="1" selected>رمادي</option>
+                        <option value="0">أبيض وأسود</option>
                     </select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">الصيغة</label>
                     <select id="scanFormat" class="form-select form-select-sm">
-                        <option value="JPG">JPG</option>
-                        <option value="PNG">PNG</option>
-                        <option value="PDF">PDF</option>
+                        <option value="jpg">JPG</option>
+                        <option value="png">PNG</option>
+                        <option value="pdf">PDF</option>
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
-                    <button type="button" class="btn btn-primary btn-sm" id="btnScan" onclick="doScan()">
+                    <button type="button" class="btn btn-primary btn-sm" id="btnScan" disabled onclick="doScan()">
                         <i class="bi bi-upc-scan"></i> مسح ضوئي
                     </button>
                     <button type="button" class="btn btn-outline-danger btn-sm" id="btnClearScans" onclick="clearAllScans()" style="display:none;">
@@ -99,6 +76,9 @@
                     </button>
                 </div>
             </div>
+
+            <!-- DWT viewer container (hidden, used internally) -->
+            <div id="dwtcontrolContainer" style="display:none;"></div>
 
             <!-- Scanned images preview -->
             <div id="scannedImagesContainer" class="mt-3" style="display:none;">
@@ -116,126 +96,155 @@
 <!-- Hidden input to hold scanned files for form submission -->
 <input type="hidden" name="scannedFilesJson" id="scannedFilesJson" />
 
-<script src="~/js/JSPrintManager.js"></script>
+<script src="~/Dynamic-Web-TWAIN-19.3.2/dist/dynamsoft.webtwain.min.js"></script>
 <script>
+    var DWTObject = null;
+    var deviceList = [];
     var scannedFiles = [];
 
+    Dynamsoft.DWT.AutoLoad = true;
+    Dynamsoft.DWT.Containers = [{ ContainerId: 'dwtcontrolContainer', Width: 0, Height: 0 }];
+    Dynamsoft.DWT.ResourcesPath = '/Dynamic-Web-TWAIN-19.3.2/dist';
+    Dynamsoft.DWT.ProductKey = 't0079jAAAAKeJCF5BGPKPBTrVlqojb3AFF/osDLrCocfBum0cLw/+e97O3b8j3Y+zA6N3+B0hzsl069kW0rjDzMqly6I1qioz+RP2oUoPsH0cUA==';
+
     function hideAllStatusPanels() {
-        document.getElementById('jspmStatus').style.display = 'none';
-        document.getElementById('jspmClosed').style.display = 'none';
-        document.getElementById('jspmBlocked').style.display = 'none';
-        document.getElementById('jspmWaiting').style.display = 'none';
+        document.getElementById('dwtStatus').style.display = 'none';
+        document.getElementById('dwtNotInstalled').style.display = 'none';
         document.getElementById('scannerControls').style.display = 'none';
     }
 
-    function showJspmStatus() {
-        hideAllStatusPanels();
-        var status = JSPM.JSPrintManager.websocket_status;
-
-        if (status === JSPM.WSStatus.Open) {
-            var el = document.getElementById('jspmStatus');
-            el.style.display = '';
-            el.className = 'alert alert-success d-flex align-items-center gap-2';
-            el.innerHTML = '<i class="bi bi-check-circle-fill"></i> <span>خدمة المسح الضوئي متصلة</span>';
-            document.getElementById('scannerControls').style.display = '';
-            loadScanners();
-        } else if (status === JSPM.WSStatus.Blocked) {
-            document.getElementById('jspmBlocked').style.display = '';
-        } else if (status === JSPM.WSStatus.WaitingForUserResponse) {
-            document.getElementById('jspmWaiting').style.display = '';
-        } else {
-            document.getElementById('jspmClosed').style.display = '';
-        }
-    }
-
-    function initJSPM() {
-        hideAllStatusPanels();
-        var statusEl = document.getElementById('jspmStatus');
-        statusEl.style.display = '';
-        statusEl.className = 'alert alert-warning d-flex align-items-center gap-2';
-        statusEl.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div><span>جاري الاتصال بخدمة المسح الضوئي...</span>';
-
-        JSPM.JSPrintManager.auto_reconnect = true;
-        JSPM.JSPrintManager.start()
-            .then(function () {
-                showJspmStatus();
-            })
-            .catch(function () {
+    Dynamsoft.DWT.RegisterEvent("OnWebTwainReady", function () {
+        DWTObject = Dynamsoft.DWT.GetWebTwain('dwtcontrolContainer');
+        if (DWTObject) {
+            if (DWTObject.ErrorCode == 0) {
                 hideAllStatusPanels();
-                document.getElementById('jspmClosed').style.display = '';
-            });
-    }
+                var el = document.getElementById('dwtStatus');
+                el.style.display = '';
+                el.className = 'alert alert-success d-flex align-items-center gap-2';
+                el.innerHTML = '<i class="bi bi-check-circle-fill"></i> <span>خدمة المسح الضوئي متصلة</span>';
+                document.getElementById('scannerControls').style.display = '';
 
-    function jspmWSStatus() {
-        return JSPM.JSPrintManager.websocket_status === JSPM.WSStatus.Open;
-    }
+                DWTObject.IfAllowLocalCache = true;
+                DWTObject.ImageCaptureDriverType = 4;
+
+                loadScanners();
+            } else {
+                hideAllStatusPanels();
+                document.getElementById('dwtNotInstalled').style.display = '';
+            }
+        } else {
+            hideAllStatusPanels();
+            document.getElementById('dwtNotInstalled').style.display = '';
+        }
+    });
 
     function loadScanners() {
-        JSPM.JSPrintManager.getScanners().then(function (scanners) {
-            var sel = document.getElementById('scannerList');
-            sel.innerHTML = '';
-            if (scanners && scanners.length > 0) {
-                for (var i = 0; i < scanners.length; i++) {
-                    var opt = document.createElement('option');
-                    opt.value = scanners[i];
-                    opt.textContent = scanners[i];
-                    sel.appendChild(opt);
+        if (!DWTObject) return;
+        var sel = document.getElementById('scannerList');
+        sel.innerHTML = '';
+        sel.options.add(new Option('جاري البحث عن الماسحات...', ''));
+
+        DWTObject.GetDevicesAsync().then(function (devices) {
+            sel.options.length = 0;
+            deviceList = devices;
+            if (devices.length > 0) {
+                for (var i = 0; i < devices.length; i++) {
+                    sel.options.add(new Option(devices[i].displayName, i));
                 }
                 document.getElementById('btnScan').disabled = false;
             } else {
-                var opt = document.createElement('option');
-                opt.textContent = 'لا يوجد ماسح ضوئي';
-                sel.appendChild(opt);
+                sel.options.add(new Option('لا يوجد ماسح ضوئي', ''));
                 document.getElementById('btnScan').disabled = true;
             }
+        }).catch(function (exp) {
+            sel.options.length = 0;
+            sel.options.add(new Option('خطأ في تحميل الماسحات', ''));
+            document.getElementById('btnScan').disabled = true;
         });
     }
 
     function doScan() {
-        if (!jspmWSStatus()) return;
+        if (!DWTObject) return;
 
-        var scannerName = document.getElementById('scannerList').value;
-        if (!scannerName) return;
+        var sourceIdx = parseInt(document.getElementById('scannerList').value);
+        if (isNaN(sourceIdx) || sourceIdx < 0 || sourceIdx >= deviceList.length) return;
+
+        var dpi = parseInt(document.getElementById('scanDpi').value);
+        var pixelType = parseInt(document.getElementById('scanPixelMode').value);
+        var imgFormat = document.getElementById('scanFormat').value;
 
         var btn = document.getElementById('btnScan');
         btn.disabled = true;
         btn.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> جاري المسح...';
 
-        var csj = new JSPM.ClientScanJob();
-        csj.scannerName = scannerName;
-        csj.resolution = parseInt(document.getElementById('scanDpi').value);
-        csj.pixelMode = JSPM.PixelMode[document.getElementById('scanPixelMode').value];
-        csj.imageFormat = JSPM.ScannerImageFormatOutput[document.getElementById('scanFormat').value];
+        var beforeCount = DWTObject.HowManyImagesInBuffer;
 
-        var imgFormat = document.getElementById('scanFormat').value;
-
-        csj.onUpdate = function (data, last) {
-            if (!(data instanceof Blob)) return;
-            if (data.size === 0) return;
-
-            var reader = new FileReader();
-            reader.onload = function () {
-                var idx = scannedFiles.length + 1;
-                var ext = imgFormat.toLowerCase();
-                scannedFiles.push({ name: 'scan_' + idx + '.' + ext, dataUrl: reader.result });
-                updateScannedFilesJson();
-                renderScannedImages();
-            };
-            reader.readAsDataURL(data);
-
-            if (last) {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-upc-scan"></i> مسح ضوئي';
+        DWTObject.SelectDeviceAsync(deviceList[sourceIdx]).then(function () {
+            return DWTObject.AcquireImageAsync({
+                PixelType: pixelType,
+                Resolution: dpi,
+                IfDisableSourceAfterAcquire: true
+            });
+        }).then(function () {
+            return DWTObject.CloseSourceAsync();
+        }).then(function () {
+            var totalImages = DWTObject.HowManyImagesInBuffer;
+            var newCount = totalImages - beforeCount;
+            if (newCount <= 0) {
+                finishScan();
+                return;
             }
-        };
 
-        csj.onError = function (data, is_critical) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-upc-scan"></i> مسح ضوئي';
-            alert('خطأ في المسح الضوئي: ' + data);
-        };
+            var processedCount = 0;
+            for (var i = beforeCount; i < totalImages; i++) {
+                (function (idx, pageNum) {
+                    var enumType, ext, mime;
+                    if (imgFormat === 'pdf') {
+                        enumType = Dynamsoft.DWT.EnumDWT_ImageType.IT_PDF;
+                        ext = 'pdf';
+                        mime = 'application/pdf';
+                    } else if (imgFormat === 'png') {
+                        enumType = Dynamsoft.DWT.EnumDWT_ImageType.IT_PNG;
+                        ext = 'png';
+                        mime = 'image/png';
+                    } else {
+                        enumType = Dynamsoft.DWT.EnumDWT_ImageType.IT_JPG;
+                        ext = 'jpg';
+                        mime = 'image/jpeg';
+                    }
+                    DWTObject.ConvertToBase64(
+                        [idx],
+                        enumType,
+                        function (result) {
+                            var b64 = result.getData(0, result.getLength());
+                            addScannedFile('scan_' + (scannedFiles.length + 1) + '.' + ext, 'data:' + mime + ';base64,' + b64);
+                            processedCount++;
+                            if (processedCount >= newCount) finishScan();
+                        },
+                        function (errCode, errStr) {
+                            processedCount++;
+                            if (processedCount >= newCount) finishScan();
+                        }
+                    );
+                })(i, i - beforeCount + 1);
+            }
+        }).catch(function (exp) {
+            alert('خطأ في المسح الضوئي: ' + exp.message);
+            finishScan();
+        });
+    }
 
-        csj.sendToClient();
+    function finishScan() {
+        var btn = document.getElementById('btnScan');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-upc-scan"></i> مسح ضوئي';
+        if (DWTObject) DWTObject.RemoveAllImages();
+    }
+
+    function addScannedFile(name, dataUrl) {
+        scannedFiles.push({ name: name, dataUrl: dataUrl });
+        updateScannedFilesJson();
+        renderScannedImages();
     }
 
     function updateScannedFilesJson() {
@@ -297,6 +306,4 @@
             list.appendChild(div);
         }
     }
-
-    initJSPM();
 </script>

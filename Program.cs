@@ -16,7 +16,7 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AllowAnonymousToPage("/Account/AccessDenied");
 });
 builder.Services.AddDbContext<BarideDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
@@ -98,6 +98,14 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(builder.Environment.WebRootPath, "Dynamic-Web-TWAIN-19.3.2", "dist", "dist")),
+    RequestPath = "/Dynamic-Web-TWAIN-19.3.2/dist/dist",
+    ServeUnknownFileTypes = true,
+    DefaultContentType = "application/octet-stream"
+});
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
