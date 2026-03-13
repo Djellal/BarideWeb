@@ -117,7 +117,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapRazorPages();
 
-app.Run();
+app.Run("http://localhost:5226");
 
 // Custom claims principal factory that adds TenantId as a claim
 public class TenantClaimsPrincipalFactory : UserClaimsPrincipalFactory<AppUser, IdentityRole>
