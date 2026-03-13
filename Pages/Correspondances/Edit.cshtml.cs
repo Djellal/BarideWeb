@@ -50,8 +50,8 @@ namespace BarideWeb.Pages.Correspondances
 
             existing.Num = Corresp.Num;
             existing.NumInterne = Corresp.NumInterne;
-            existing.DateCorresp = Corresp.DateCorresp;
-            existing.DateArrivDepart = Corresp.DateArrivDepart;
+            existing.DateCorresp = DateTime.SpecifyKind(Corresp.DateCorresp, DateTimeKind.Utc);
+            existing.DateArrivDepart = DateTime.SpecifyKind(Corresp.DateArrivDepart, DateTimeKind.Utc);
             existing.Expediteur = Corresp.Expediteur;
             existing.Objet = Corresp.Objet;
             existing.Observation = Corresp.Observation;

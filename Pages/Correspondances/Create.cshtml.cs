@@ -52,6 +52,9 @@ namespace BarideWeb.Pages.Correspondances
                 return Page();
             }
 
+            Corresp.DateCorresp = DateTime.SpecifyKind(Corresp.DateCorresp, DateTimeKind.Utc);
+            Corresp.DateArrivDepart = DateTime.SpecifyKind(Corresp.DateArrivDepart, DateTimeKind.Utc);
+
             _context.Correspondances.Add(Corresp);
 
             var uploadsDir = Path.Combine(_env.WebRootPath, "uploads");

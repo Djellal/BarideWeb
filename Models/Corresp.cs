@@ -10,8 +10,8 @@ namespace BarideWeb.Models
             Cid = Guid.NewGuid();
             Expediteur = "-";
             Objet = "-";
-            DateCorresp = DateTime.Now;
-            DateArrivDepart = DateTime.Now;
+            DateCorresp = DateTime.UtcNow;
+            DateArrivDepart = DateTime.UtcNow;
         }
 
         [Key]
