@@ -20,6 +20,7 @@ namespace BarideWeb.Data
         public DbSet<Corresp> Correspondances { get; set; }
         public DbSet<Doc> Documents { get; set; }
         public DbSet<AppParameter> Parameters { get; set; }
+        public DbSet<Transfert> Transferts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,6 +61,7 @@ namespace BarideWeb.Data
             modelBuilder.Entity<Categorie>().HasQueryFilter(c => _tenantService == null || _tenantService.GetCurrentTenantId() == null || c.TenantId == _tenantService.GetCurrentTenantId());
             modelBuilder.Entity<Corresp>().HasQueryFilter(c => _tenantService == null || _tenantService.GetCurrentTenantId() == null || c.TenantId == _tenantService.GetCurrentTenantId());
             modelBuilder.Entity<AppParameter>().HasQueryFilter(p => _tenantService == null || _tenantService.GetCurrentTenantId() == null || p.TenantId == _tenantService.GetCurrentTenantId());
+            modelBuilder.Entity<Transfert>().HasQueryFilter(t => _tenantService == null || _tenantService.GetCurrentTenantId() == null || t.TenantId == _tenantService.GetCurrentTenantId());
         }
 
         public override int SaveChanges()
@@ -90,6 +92,11 @@ namespace BarideWeb.Data
             }
 
             foreach (var entry in ChangeTracker.Entries<AppParameter>().Where(e => e.State == EntityState.Added && e.Entity.TenantId == null))
+            {
+                entry.Entity.TenantId = tenantId;
+            }
+
+            foreach (var entry in ChangeTracker.Entries<Transfert>().Where(e => e.State == EntityState.Added && e.Entity.TenantId == null))
             {
                 entry.Entity.TenantId = tenantId;
             }

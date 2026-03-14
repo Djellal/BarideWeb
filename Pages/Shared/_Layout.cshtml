@@ -1,3 +1,6 @@
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
+@inject BarideWeb.Data.BarideDbContext DbContext
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -42,6 +45,23 @@
                             <i class="bi bi-archive-fill"></i> الأرشيف
                         </a>
                     </li>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                        var unviewedCount = await DbContext.Transferts
+                            .CountAsync(t => t.ReceiverId == currentUserId && !t.IsViewed);
+                        <li class="nav-item">
+                            <a class="nav-link rounded-pill px-3 position-relative" asp-page="/Transferts/Index">
+                                <i class="bi bi-send"></i> التحويلات
+                                @if (unviewedCount > 0)
+                                {
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                        @unviewedCount
+                                    </span>
+                                }
+                            </a>
+                        </li>
+                    }
                     @if (User.IsInRole("Admin") || User.IsInRole("TenantAdmin"))
                     {
                         <li class="nav-item">

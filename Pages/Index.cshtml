@@ -8,21 +8,24 @@
 <div class="card">
     <div class="card-header card-header-custom d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex gap-2 flex-wrap align-items-center">
-            <!-- Add dropdown -->
-            <div class="dropdown">
-                <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="bi bi-plus-circle"></i> إضافـــة
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="0">وارد داخلي</a></li>
-                    <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="1">وارد خارجي</a></li>
-                    <li><hr class="dropdown-divider" /></li>
-                    <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="2">صادر داخلي</a></li>
-                    <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="3">صادر خارجي</a></li>
-                    <li><hr class="dropdown-divider" /></li>
-                    <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="4">متفرقات</a></li>
-                </ul>
-            </div>
+            @if (User.IsInRole("Admin") || User.IsInRole("TenantAdmin"))
+            {
+                <!-- Add dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-plus-circle"></i> إضافـــة
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="0">وارد داخلي</a></li>
+                        <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="1">وارد خارجي</a></li>
+                        <li><hr class="dropdown-divider" /></li>
+                        <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="2">صادر داخلي</a></li>
+                        <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="3">صادر خارجي</a></li>
+                        <li><hr class="dropdown-divider" /></li>
+                        <li><a class="dropdown-item" asp-page="/Correspondances/Create" asp-route-type="4">متفرقات</a></li>
+                    </ul>
+                </div>
+            }
 
             <!-- Print -->
             <a class="btn btn-info btn-sm text-white" asp-page="/Correspondances/Print" asp-route-type="@((int)Model.CurrentType)">
@@ -209,6 +212,7 @@
 
         var viewMode = @((int)Model.CorrespViewMode);
         var searchAll = @(Model.SearchAll ? "true" : "false");
+        var canEdit = @(User.IsInRole("Admin") || User.IsInRole("TenantAdmin") ? "true" : "false");
 
         var rowData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Correspondances.Select(c => new {
             cid = c.Cid,
@@ -229,7 +233,9 @@
                 _ => ""
             },
             viewUrl = Url.Page("/Correspondances/View", new { id = c.Cid }),
-            editUrl = Url.Page("/Correspondances/Edit", new { id = c.Cid })
+            editUrl = Url.Page("/Correspondances/Edit", new { id = c.Cid }),
+            transfertCount = Model.TransfertCounts.GetValueOrDefault(c.Cid, 0),
+            transfertUrl = Url.Page("/Transferts/Index", new { cid = c.Cid })
         })));
 
         var columnDefs = [
@@ -237,7 +243,7 @@
             { field: 'numInterne', headerName: 'الرقم الداخلي', filter: true, sortable: true, minWidth: 120 },
             { field: 'dateCorresp', headerName: 'تاريخ المراسلة', filter: 'agDateColumnFilter', sortable: true, minWidth: 130 },
             { field: 'dateArrivDepart', headerName: 'تاريخ الوصول', filter: 'agDateColumnFilter', sortable: true, minWidth: 130 },
-            { field: 'expediteur', headerName: '@Model.ExpedLabel', filter: true, sortable: true, minWidth: 150, flex: 1 },
+            { field: 'expediteur', headerName: 'المرسل', filter: true, sortable: true, minWidth: 150, flex: 1 },
             { field: 'objet', headerName: 'الموضوع', filter: true, sortable: true, minWidth: 200, flex: 2 },
             { field: 'observation', headerName: 'ملاحظة', filter: true, sortable: true, minWidth: 130 },
             { field: 'categorie', headerName: 'الصنف', filter: true, sortable: true, minWidth: 120 }
@@ -248,16 +254,32 @@
         }
 
         columnDefs.push({
+            headerName: 'التحويلات',
+            minWidth: 90,
+            sortable: true,
+            filter: false,
+            cellRenderer: function (params) {
+                if (params.data.transfertCount > 0) {
+                    return '<a href="' + params.data.transfertUrl + '" class="badge bg-info text-white text-decoration-none" title="عرض التحويلات"><i class="bi bi-send"></i> ' + params.data.transfertCount + '</a>';
+                }
+                return '<span class="text-muted">-</span>';
+            }
+        });
+
+        columnDefs.push({
             headerName: 'الإجراءات',
-            minWidth: 140,
+            minWidth: canEdit ? 140 : 60,
             sortable: false,
             filter: false,
             cellRenderer: function (params) {
-                return '<div class="btn-group btn-group-sm">'
-                    + '<a class="btn btn-outline-primary" href="' + params.data.viewUrl + '" title="عرض"><i class="bi bi-eye"></i></a>'
-                    + '<a class="btn btn-outline-warning" href="' + params.data.editUrl + '" title="تعديل"><i class="bi bi-pencil"></i></a>'
-                    + '<button type="button" class="btn btn-outline-danger" onclick="confirmDelete(\'' + params.data.cid + '\')" title="حذف"><i class="bi bi-trash"></i></button>'
-                    + '</div>';
+                var html = '<div class="btn-group btn-group-sm">'
+                    + '<a class="btn btn-outline-primary" href="' + params.data.viewUrl + '" title="عرض"><i class="bi bi-eye"></i></a>';
+                if (canEdit) {
+                    html += '<a class="btn btn-outline-warning" href="' + params.data.editUrl + '" title="تعديل"><i class="bi bi-pencil"></i></a>'
+                        + '<button type="button" class="btn btn-outline-danger" onclick="confirmDelete(\'' + params.data.cid + '\')" title="حذف"><i class="bi bi-trash"></i></button>';
+                }
+                html += '</div>';
+                return html;
             }
         });
 

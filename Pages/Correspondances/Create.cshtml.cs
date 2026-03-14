@@ -8,6 +8,7 @@ using BarideWeb.Models;
 
 namespace BarideWeb.Pages.Correspondances
 {
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin,TenantAdmin")]
     public class CreateModel : PageModel
     {
         private readonly BarideDbContext _context;

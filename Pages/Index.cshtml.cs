@@ -25,6 +25,7 @@ namespace BarideWeb.Pages
         public bool SearchAll { get; set; }
 
         public ViewMode CorrespViewMode { get; set; } = ViewMode.NewTab;
+        public Dictionary<Guid, int> TransfertCounts { get; set; } = new();
 
         // Filter properties
         public Guid? FilterCatId { get; set; }
@@ -87,6 +88,13 @@ namespace BarideWeb.Pages
 
             Correspondances = await query.OrderByDescending(c => c.DateArrivDepart).ToListAsync();
 
+            var cids = Correspondances.Select(c => c.Cid).ToList();
+            TransfertCounts = await _context.Transferts
+                .Where(t => cids.Contains(t.Cid))
+                .GroupBy(t => t.Cid)
+                .Select(g => new { g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.Key, x => x.Count);
+
             // Load view mode parameter
             var viewModeParam = await _context.Parameters
                 .FirstOrDefaultAsync(p => p.Key == "CorrespViewMode");
@@ -131,6 +139,9 @@ namespace BarideWeb.Pages
 
         public async Task<IActionResult> OnPostDeleteAsync(Guid id, int type)
         {
+            if (!User.IsInRole("Admin") && !User.IsInRole("TenantAdmin"))
+                return Forbid();
+
             var corresp = await _context.Correspondances.FindAsync(id);
             if (corresp != null)
             {
