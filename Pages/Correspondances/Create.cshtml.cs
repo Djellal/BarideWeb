@@ -120,7 +120,10 @@ namespace BarideWeb.Pages.Correspondances
 
         private class ScannedFileDto
         {
+            [System.Text.Json.Serialization.JsonPropertyName("name")]
             public string Name { get; set; } = "";
+
+            [System.Text.Json.Serialization.JsonPropertyName("dataUrl")]
             public string DataUrl { get; set; } = "";
         }
 
