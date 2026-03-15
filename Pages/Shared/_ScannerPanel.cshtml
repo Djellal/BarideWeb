@@ -1,3 +1,8 @@
+@{
+    var defaultDpi = ViewData["ScannerDpi"] as string ?? "200";
+    var defaultPixelMode = ViewData["ScannerPixelMode"] as string ?? "Grayscale";
+    var defaultImageFormat = ViewData["ScannerImageFormat"] as string ?? "PDF";
+}
 <!-- Scanner Panel - JSPrintManager -->
 <div class="mt-4">
     <h6 class="fw-bold"><i class="bi bi-upc-scan"></i> المسح الضوئي</h6>
@@ -38,25 +43,26 @@
                 <div class="col-md-2">
                     <label class="form-label">الدقة (DPI)</label>
                     <select id="scanDpi" class="form-select form-select-sm">
-                        <option value="100">100</option>
-                        <option value="150">150</option>
-                        <option value="200" selected>200</option>
-                        <option value="300">300</option>
-                        <option value="600">600</option>
+                        <option value="100" selected="@(defaultDpi == "100")">100</option>
+                        <option value="150" selected="@(defaultDpi == "150")">150</option>
+                        <option value="200" selected="@(defaultDpi == "200")">200</option>
+                        <option value="300" selected="@(defaultDpi == "300")">300</option>
+                        <option value="600" selected="@(defaultDpi == "600")">600</option>
                     </select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">اللون</label>
                     <select id="scanPixelMode" class="form-select form-select-sm">
-                        <option value="Color">ألوان</option>
-                        <option value="Grayscale" selected>رمادي</option>
+                        <option value="Color" selected="@(defaultPixelMode == "Color")">ألوان</option>
+                        <option value="Grayscale" selected="@(defaultPixelMode == "Grayscale")">رمادي</option>
                     </select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">الصيغة</label>
                     <select id="scanFormat" class="form-select form-select-sm">
-                        <option value="JPG">JPG</option>
-                        <option value="PNG">PNG</option>
+                        <option value="JPG" selected="@(defaultImageFormat == "JPG")">JPG</option>
+                        <option value="PNG" selected="@(defaultImageFormat == "PNG")">PNG</option>
+                        <option value="PDF" selected="@(defaultImageFormat == "PDF")">PDF</option>
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
@@ -165,7 +171,7 @@
             if (imgBlob.size == 0) return;
 
             var ext = imgFormat.toLowerCase();
-            var mime = ext === 'png' ? 'image/png' : 'image/jpeg';
+            var mime = ext === 'png' ? 'image/png' : ext === 'pdf' ? 'application/pdf' : 'image/jpeg';
 
             var reader = new FileReader();
             reader.onloadend = function () {
@@ -241,9 +247,16 @@
             div.className = 'position-relative border rounded p-1';
             div.style.width = '120px';
 
-            div.innerHTML =
-                '<img src="' + scannedFiles[i].dataUrl + '" class="img-fluid rounded" style="max-height:100px;" />' +
-                '<p class="small text-center mb-0">' + scannedFiles[i].name + '</p>';
+            var ext = scannedFiles[i].name.split('.').pop().toLowerCase();
+            if (ext === 'pdf') {
+                div.innerHTML =
+                    '<div class="text-center p-3"><i class="bi bi-file-earmark-pdf" style="font-size:2rem; color:#dc3545;"></i>' +
+                    '<p class="small mb-0">' + scannedFiles[i].name + '</p></div>';
+            } else {
+                div.innerHTML =
+                    '<img src="' + scannedFiles[i].dataUrl + '" class="img-fluid rounded" style="max-height:100px;" />' +
+                    '<p class="small text-center mb-0">' + scannedFiles[i].name + '</p>';
+            }
 
             var btnDel = document.createElement('button');
             btnDel.type = 'button';

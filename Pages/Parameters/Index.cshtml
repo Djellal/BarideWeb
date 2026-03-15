@@ -56,6 +56,55 @@
                                                 </select>
                                             </div>
                                         }
+                                        else if (p.Key == "ScannerDpi")
+                                        {
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-bold">
+                                                    <i class="bi bi-speedometer2"></i> دقة المسح الضوئي (DPI)
+                                                </label>
+                                                <p class="text-muted small mb-0">@p.Description</p>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <select name="param[ScannerDpi]" class="form-select">
+                                                    <option value="100" selected="@(p.Value == "100")">100</option>
+                                                    <option value="150" selected="@(p.Value == "150")">150</option>
+                                                    <option value="200" selected="@(p.Value == "200")">200</option>
+                                                    <option value="300" selected="@(p.Value == "300")">300</option>
+                                                    <option value="600" selected="@(p.Value == "600")">600</option>
+                                                </select>
+                                            </div>
+                                        }
+                                        else if (p.Key == "ScannerPixelMode")
+                                        {
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-bold">
+                                                    <i class="bi bi-palette"></i> وضع اللون الافتراضي
+                                                </label>
+                                                <p class="text-muted small mb-0">@p.Description</p>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <select name="param[ScannerPixelMode]" class="form-select">
+                                                    <option value="Color" selected="@(p.Value == "Color")">ألوان</option>
+                                                    <option value="Grayscale" selected="@(p.Value == "Grayscale")">رمادي</option>
+                                                </select>
+                                            </div>
+                                        }
+                                        else if (p.Key == "ScannerImageFormat")
+                                        {
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-bold">
+                                                    <i class="bi bi-file-image"></i> صيغة الصورة الافتراضية
+                                                </label>
+                                                <p class="text-muted small mb-0">@p.Description</p>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <select name="param[ScannerImageFormat]" class="form-select">
+                                                    <option value="JPG" selected="@(p.Value == "JPG")">JPG</option>
+                                                    <option value="PNG" selected="@(p.Value == "PNG")">PNG</option>
+                                                    <option value="PDF" selected="@(p.Value == "PDF")">PDF</option>
+                                                </select>
+                                            </div>
+                                        }
                                         else
                                         {
                                             <div class="col-md-4">

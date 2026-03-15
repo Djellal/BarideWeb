@@ -91,20 +91,33 @@ namespace BarideWeb.Pages.Parameters
                     .Where(p => p.TenantId == t.TenantId)
                     .ToListAsync();
 
-                // Ensure CorrespViewMode parameter exists
-                if (!parameters.Any(p => p.Key == "CorrespViewMode"))
+                // Ensure default parameters exist
+                var defaults = new Dictionary<string, (string Value, string Description)>
                 {
-                    var newParam = new AppParameter
+                    ["CorrespViewMode"] = ("0", "طريقة عرض المراسلة: 0=في صفحة جديدة، 1=في نافذة منبثقة، 2=في نفس الصفحة"),
+                    ["ScannerDpi"] = ("200", "الدقة الافتراضية للماسح الضوئي (DPI): 100, 150, 200, 300, 600"),
+                    ["ScannerPixelMode"] = ("Grayscale", "وضع اللون الافتراضي للماسح الضوئي: Color, Grayscale"),
+                    ["ScannerImageFormat"] = ("PDF", "صيغة الصورة الافتراضية للماسح الضوئي: JPG, PNG, PDF"),
+                };
+
+                bool added = false;
+                foreach (var d in defaults)
+                {
+                    if (!parameters.Any(p => p.Key == d.Key))
                     {
-                        Key = "CorrespViewMode",
-                        Value = "0",
-                        Description = "طريقة عرض المراسلة: 0=في صفحة جديدة، 1=في نافذة منبثقة، 2=في نفس الصفحة",
-                        TenantId = t.TenantId
-                    };
-                    _context.Parameters.Add(newParam);
-                    await _context.SaveChangesAsync();
-                    parameters.Add(newParam);
+                        var newParam = new AppParameter
+                        {
+                            Key = d.Key,
+                            Value = d.Value.Value,
+                            Description = d.Value.Description,
+                            TenantId = t.TenantId
+                        };
+                        _context.Parameters.Add(newParam);
+                        parameters.Add(newParam);
+                        added = true;
+                    }
                 }
+                if (added) await _context.SaveChangesAsync();
 
                 TenantParams.Add(new TenantParametersViewModel
                 {

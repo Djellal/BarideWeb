@@ -143,6 +143,13 @@ namespace BarideWeb.Pages.Correspondances
 
             ExpedLabel = Corresp.Type == TypeCorresp.Entrant_Interne || Corresp.Type == TypeCorresp.Entrant_Externe
                 ? "المرسل" : "المرسل إليه";
+
+            var scannerParams = await _context.Parameters
+                .Where(p => p.Key == "ScannerDpi" || p.Key == "ScannerPixelMode" || p.Key == "ScannerImageFormat")
+                .ToListAsync();
+            ViewData["ScannerDpi"] = scannerParams.FirstOrDefault(p => p.Key == "ScannerDpi")?.Value ?? "200";
+            ViewData["ScannerPixelMode"] = scannerParams.FirstOrDefault(p => p.Key == "ScannerPixelMode")?.Value ?? "Grayscale";
+            ViewData["ScannerImageFormat"] = scannerParams.FirstOrDefault(p => p.Key == "ScannerImageFormat")?.Value ?? "PDF";
         }
 
         private async Task<string> GenerateNum(TypeCorresp tp, int numLen)

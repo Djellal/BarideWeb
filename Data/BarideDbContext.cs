@@ -54,6 +54,30 @@ namespace BarideWeb.Data
                     Value = "0",
                     Description = "طريقة عرض المراسلة: 0=في صفحة جديدة، 1=في نافذة منبثقة، 2=في نفس الصفحة",
                     TenantId = defaultTenantId
+                },
+                new AppParameter
+                {
+                    ParamId = Guid.Parse("c0000000-0000-0000-0000-000000000010"),
+                    Key = "ScannerDpi",
+                    Value = "200",
+                    Description = "الدقة الافتراضية للماسح الضوئي (DPI): 100, 150, 200, 300, 600",
+                    TenantId = defaultTenantId
+                },
+                new AppParameter
+                {
+                    ParamId = Guid.Parse("c0000000-0000-0000-0000-000000000011"),
+                    Key = "ScannerPixelMode",
+                    Value = "Grayscale",
+                    Description = "وضع اللون الافتراضي للماسح الضوئي: Color, Grayscale",
+                    TenantId = defaultTenantId
+                },
+                new AppParameter
+                {
+                    ParamId = Guid.Parse("c0000000-0000-0000-0000-000000000012"),
+                    Key = "ScannerImageFormat",
+                    Value = "PDF",
+                    Description = "صيغة الصورة الافتراضية للماسح الضوئي: JPG, PNG, PDF",
+                    TenantId = defaultTenantId
                 }
             );
 
