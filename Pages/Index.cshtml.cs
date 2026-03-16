@@ -1,8 +1,12 @@
+using System.Security.Claims;
+using System.Text.Json;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using BarideWeb.Data;
 using BarideWeb.Models;
+using BarideWeb.Services;
 
 namespace BarideWeb.Pages
 {
@@ -10,11 +14,15 @@ namespace BarideWeb.Pages
     {
         private readonly BarideDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly UserManager<AppUser> _userManager;
+        private readonly IEmailService _emailService;
 
-        public IndexModel(BarideDbContext context, IWebHostEnvironment env)
+        public IndexModel(BarideDbContext context, IWebHostEnvironment env, UserManager<AppUser> userManager, IEmailService emailService)
         {
             _context = context;
             _env = env;
+            _userManager = userManager;
+            _emailService = emailService;
         }
 
         public List<Corresp> Correspondances { get; set; } = new();
@@ -26,6 +34,7 @@ namespace BarideWeb.Pages
 
         public ViewMode CorrespViewMode { get; set; } = ViewMode.NewTab;
         public Dictionary<Guid, int> TransfertCounts { get; set; } = new();
+        public List<AppUser> Users { get; set; } = new();
 
         // Filter properties
         public Guid? FilterCatId { get; set; }
@@ -102,6 +111,8 @@ namespace BarideWeb.Pages
             {
                 CorrespViewMode = (ViewMode)vm;
             }
+
+            await LoadUsers();
         }
 
         public async Task<IActionResult> OnGetViewPartialAsync(Guid id)
@@ -160,6 +171,102 @@ namespace BarideWeb.Pages
                 await _context.SaveChangesAsync();
             }
             return RedirectToPage("/Index", new { type });
+        }
+
+        public async Task<IActionResult> OnPostTransferAsync(Guid cid, string receiverId, string? note)
+        {
+            var corresp = await _context.Correspondances.FindAsync(cid);
+            if (corresp == null) return NotFound();
+
+            var senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var transfert = new Transfert
+            {
+                Cid = cid,
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                Note = note,
+                DateTransfert = DateTime.UtcNow
+            };
+
+            _context.Transferts.Add(transfert);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage("/Index", new { type = (int)(corresp.Type ?? TypeCorresp.Entrant_Interne) });
+        }
+
+        public async Task<IActionResult> OnPostShareAsync(Guid cid, string? contactsJson)
+        {
+            var corresp = await _context.Correspondances.FindAsync(cid);
+            if (corresp == null) return NotFound();
+
+            if (string.IsNullOrWhiteSpace(contactsJson))
+                return RedirectToPage("/Index", new { type = (int)(corresp.Type ?? TypeCorresp.Entrant_Interne) });
+
+            var contacts = JsonSerializer.Deserialize<List<ShareContactDto>>(contactsJson);
+            if (contacts == null || contacts.Count == 0)
+                return RedirectToPage("/Index", new { type = (int)(corresp.Type ?? TypeCorresp.Entrant_Interne) });
+
+            var viewUrl = $"{Request.Scheme}://{Request.Host}/Correspondances/View/{cid}";
+            var subject = $"مراسلة رقم {corresp.Num} - {corresp.Objet}";
+            var body = $@"
+                <div dir='rtl' style='font-family: Cairo, sans-serif;'>
+                    <h3>مراسلة رقم {corresp.Num}</h3>
+                    <p><strong>الموضوع:</strong> {corresp.Objet}</p>
+                    <p><strong>المرسل:</strong> {corresp.Expediteur}</p>
+                    <p><a href='{viewUrl}'>اضغط هنا لعرض المراسلة</a></p>
+                </div>";
+
+            foreach (var dto in contacts)
+            {
+                if (string.IsNullOrWhiteSpace(dto.Email)) continue;
+
+                var existing = await _context.Contacts
+                    .FirstOrDefaultAsync(c => c.Email == dto.Email);
+
+                if (existing == null)
+                {
+                    var newContact = new Contact
+                    {
+                        Name = dto.Name ?? dto.Email,
+                        Email = dto.Email,
+                        Phone = dto.Phone ?? ""
+                    };
+                    _context.Contacts.Add(newContact);
+                }
+
+                await _emailService.SendEmailAsync(dto.Email, dto.Name ?? dto.Email, subject, body);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToPage("/Index", new { type = (int)(corresp.Type ?? TypeCorresp.Entrant_Interne) });
+        }
+
+        private class ShareContactDto
+        {
+            public string? Name { get; set; }
+            public string? Email { get; set; }
+            public string? Phone { get; set; }
+        }
+
+        private async Task LoadUsers()
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var tenantClaim = User.FindFirst("TenantId");
+            Guid? tenantId = tenantClaim != null && Guid.TryParse(tenantClaim.Value, out var tid) ? tid : null;
+
+            if (tenantId.HasValue)
+            {
+                Users = await _userManager.Users
+                    .Where(u => u.TenantId == tenantId && u.Id != currentUserId)
+                    .ToListAsync();
+            }
+            else
+            {
+                Users = await _userManager.Users
+                    .Where(u => u.Id != currentUserId)
+                    .ToListAsync();
+            }
         }
     }
 }
