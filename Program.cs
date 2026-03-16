@@ -39,6 +39,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITenantService, TenantService>();
+builder.Services.AddTransient<IEmailService, EmailService>();
 
 // Add TenantId claim to the user principal on sign-in
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, TenantClaimsPrincipalFactory>();
@@ -116,6 +117,21 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapRazorPages();
+
+// Contact search API for autocomplete
+app.MapGet("/api/contacts/search", async (string? q, BarideDbContext db) =>
+{
+    if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+        return Results.Json(Array.Empty<object>());
+
+    var contacts = await db.Contacts
+        .Where(c => c.Name.Contains(q) || c.Email.Contains(q))
+        .Take(10)
+        .Select(c => new { c.ContactId, c.Name, c.Email, c.Phone })
+        .ToListAsync();
+
+    return Results.Json(contacts);
+}).RequireAuthorization();
 
 app.Run("http://localhost:5226");
 

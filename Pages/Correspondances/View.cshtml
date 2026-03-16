@@ -15,9 +15,12 @@
             IsModal = false
         }" />
 
-        <div class="mt-3">
+        <div class="mt-3 d-flex gap-2">
             <button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#transferModal">
                 <i class="bi bi-send"></i> تحويل
+            </button>
+            <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#shareModal">
+                <i class="bi bi-share"></i> إرسال الرابط
             </button>
         </div>
 
@@ -55,5 +58,162 @@
                 </div>
             </div>
         </div>
+        <!-- Share modal -->
+        <div class="modal fade" id="shareModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" asp-page-handler="Share" id="shareForm">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="bi bi-share"></i> إرسال رابط المراسلة</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="cid" value="@Model.Corresp.Cid" />
+                            <input type="hidden" name="contactsJson" id="contactsJsonInput" />
+
+                            <div class="mb-3 position-relative">
+                                <label class="form-label">بحث عن جهة اتصال</label>
+                                <input type="text" id="contactSearch" class="form-control" placeholder="اكتب الاسم أو البريد..." autocomplete="off" />
+                                <div id="contactSuggestions" class="list-group position-absolute w-100" style="z-index:1050; display:none;"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">أو أضف جهة اتصال جديدة</label>
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <input type="text" id="newContactName" class="form-control form-control-sm" placeholder="الاسم" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="email" id="newContactEmail" class="form-control form-control-sm" placeholder="البريد الإلكتروني" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="text" id="newContactPhone" class="form-control form-control-sm" placeholder="الهاتف" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" id="addContactBtn" class="btn btn-sm btn-outline-success w-100">
+                                            <i class="bi bi-plus"></i> إضافة
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="selectedContacts">
+                                <label class="form-label">جهات الاتصال المختارة</label>
+                                <div id="contactsList" class="d-flex flex-wrap gap-2"></div>
+                                <p id="noContactsMsg" class="text-muted small">لم يتم اختيار أي جهة اتصال</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                            <button type="submit" class="btn btn-success" id="shareSubmitBtn" disabled>
+                                <i class="bi bi-envelope"></i> إرسال
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+<script>
+$(function () {
+    var selectedContacts = [];
+    var searchTimer;
+
+    function updateContactsUI() {
+        var list = $('#contactsList');
+        list.empty();
+        if (selectedContacts.length === 0) {
+            $('#noContactsMsg').show();
+            $('#shareSubmitBtn').prop('disabled', true);
+        } else {
+            $('#noContactsMsg').hide();
+            $('#shareSubmitBtn').prop('disabled', false);
+            selectedContacts.forEach(function (c, i) {
+                list.append(
+                    '<span class="badge bg-info text-dark p-2">' +
+                    c.name + ' (' + c.email + ')' +
+                    ' <a href="#" class="text-danger ms-1 remove-contact" data-index="' + i + '">&times;</a>' +
+                    '</span>'
+                );
+            });
+        }
+        $('#contactsJsonInput').val(JSON.stringify(selectedContacts));
+    }
+
+    // Autocomplete search
+    $('#contactSearch').on('input', function () {
+        clearTimeout(searchTimer);
+        var q = $(this).val();
+        if (q.length < 2) {
+            $('#contactSuggestions').hide();
+            return;
+        }
+        searchTimer = setTimeout(function () {
+            $.getJSON('/api/contacts/search', { q: q }, function (data) {
+                var sg = $('#contactSuggestions');
+                sg.empty();
+                if (data.length === 0) {
+                    sg.hide();
+                    return;
+                }
+                data.forEach(function (c) {
+                    sg.append(
+                        '<a href="#" class="list-group-item list-group-item-action suggestion-item" ' +
+                        'data-name="' + c.name + '" data-email="' + c.email + '" data-phone="' + (c.phone || '') + '">' +
+                        c.name + ' - ' + c.email +
+                        '</a>'
+                    );
+                });
+                sg.show();
+            });
+        }, 300);
+    });
+
+    // Select from suggestions
+    $(document).on('click', '.suggestion-item', function (e) {
+        e.preventDefault();
+        var name = $(this).data('name');
+        var email = $(this).data('email');
+        var phone = $(this).data('phone');
+        if (!selectedContacts.some(function (c) { return c.email === email; })) {
+            selectedContacts.push({ name: name, email: email, phone: phone });
+            updateContactsUI();
+        }
+        $('#contactSearch').val('');
+        $('#contactSuggestions').hide();
+    });
+
+    // Add new contact manually
+    $('#addContactBtn').on('click', function () {
+        var name = $('#newContactName').val().trim();
+        var email = $('#newContactEmail').val().trim();
+        var phone = $('#newContactPhone').val().trim();
+        if (!email) return;
+        if (!selectedContacts.some(function (c) { return c.email === email; })) {
+            selectedContacts.push({ name: name || email, email: email, phone: phone });
+            updateContactsUI();
+        }
+        $('#newContactName').val('');
+        $('#newContactEmail').val('');
+        $('#newContactPhone').val('');
+    });
+
+    // Remove contact
+    $(document).on('click', '.remove-contact', function (e) {
+        e.preventDefault();
+        selectedContacts.splice($(this).data('index'), 1);
+        updateContactsUI();
+    });
+
+    // Hide suggestions on blur
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('#contactSearch, #contactSuggestions').length) {
+            $('#contactSuggestions').hide();
+        }
+    });
+});
+</script>
+}

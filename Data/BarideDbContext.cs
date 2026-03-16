@@ -21,6 +21,7 @@ namespace BarideWeb.Data
         public DbSet<Doc> Documents { get; set; }
         public DbSet<AppParameter> Parameters { get; set; }
         public DbSet<Transfert> Transferts { get; set; }
+        public DbSet<Contact> Contacts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
