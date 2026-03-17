@@ -15,6 +15,7 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizeFolder("/");
     options.Conventions.AllowAnonymousToPage("/Account/Login");
     options.Conventions.AllowAnonymousToPage("/Account/AccessDenied");
+    options.Conventions.AllowAnonymousToPage("/Correspondances/SharedView");
 });
 builder.Services.AddDbContext<BarideDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));

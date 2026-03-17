@@ -4,20 +4,23 @@
 <div class="card" data-corresp-cid="@Model.Corresp.Cid">
     <div class="card-header card-header-custom d-flex justify-content-between align-items-center flex-wrap">
         <h5 class="mb-0"><i class="bi bi-envelope-open"></i> مراسلة رقم @Model.Corresp.Num - @Model.TypeLabel</h5>
-        <div class="d-flex gap-2">
-            <button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#transferModal">
-                <i class="bi bi-send"></i> تحويل
-            </button>
-            <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#shareModal">
-                <i class="bi bi-share"></i> إرسال الرابط
-            </button>
-            @if (User.IsInRole("Admin") || User.IsInRole("TenantAdmin"))
-            {
-                <a class="btn btn-warning btn-sm" asp-page="/Correspondances/Edit" asp-route-id="@Model.Corresp.Cid">
-                    <i class="bi bi-pencil"></i> تعديل
-                </a>
-            }
-        </div>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <div class="d-flex gap-2">
+                <button class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#transferModal">
+                    <i class="bi bi-send"></i> تحويل
+                </button>
+                <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#shareModal">
+                    <i class="bi bi-share"></i> إرسال الرابط
+                </button>
+                @if (User.IsInRole("Admin") || User.IsInRole("TenantAdmin"))
+                {
+                    <a class="btn btn-warning btn-sm" asp-page="/Correspondances/Edit" asp-route-id="@Model.Corresp.Cid">
+                        <i class="bi bi-pencil"></i> تعديل
+                    </a>
+                }
+            </div>
+        }
     </div>
     <div class="card-body">
         <!-- Corresp details -->

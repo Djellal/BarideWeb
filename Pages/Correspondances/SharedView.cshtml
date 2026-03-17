@@ -1,0 +1,18 @@
+@page "{id:guid}"
+@model BarideWeb.Pages.Correspondances.SharedViewModel
+@using BarideWeb.Models
+@{
+    ViewData["Title"] = "مراسلة رقم " + Model.Corresp.Num;
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <partial name="_CorrespView" model="new CorrespViewData {
+            Corresp = Model.Corresp,
+            Documents = Model.Documents,
+            TypeLabel = Model.TypeLabel,
+            ExpedLabel = Model.ExpedLabel,
+            IsModal = false
+        }" />
+    </div>
+</div>
