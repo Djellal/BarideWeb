@@ -89,7 +89,7 @@ namespace BarideWeb.Pages.Correspondances
             if (string.IsNullOrWhiteSpace(contactsJson))
                 return RedirectToPage(new { id = cid });
 
-            var contacts = JsonSerializer.Deserialize<List<ShareContactDto>>(contactsJson);
+            var contacts = JsonSerializer.Deserialize<List<ShareContactDto>>(contactsJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (contacts == null || contacts.Count == 0)
                 return RedirectToPage(new { id = cid });
 

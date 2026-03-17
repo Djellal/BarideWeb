@@ -205,7 +205,7 @@ namespace BarideWeb.Pages
             if (string.IsNullOrWhiteSpace(contactsJson))
                 return RedirectToPage("/Index", new { type = (int)(corresp.Type ?? TypeCorresp.Entrant_Interne) });
 
-            var contacts = JsonSerializer.Deserialize<List<ShareContactDto>>(contactsJson);
+            var contacts = JsonSerializer.Deserialize<List<ShareContactDto>>(contactsJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (contacts == null || contacts.Count == 0)
                 return RedirectToPage("/Index", new { type = (int)(corresp.Type ?? TypeCorresp.Entrant_Interne) });
 
