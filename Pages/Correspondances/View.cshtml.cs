@@ -103,6 +103,8 @@ namespace BarideWeb.Pages.Correspondances
                     <p><a href='{viewUrl}'>اضغط هنا لعرض المراسلة</a></p>
                 </div>";
 
+            var failedEmails = new List<string>();
+
             foreach (var dto in contacts)
             {
                 if (string.IsNullOrWhiteSpace(dto.Email)) continue;
@@ -126,14 +128,20 @@ namespace BarideWeb.Pages.Correspondances
                 {
                     await _emailService.SendEmailAsync(dto.Email, dto.Name ?? dto.Email, subject, body);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // Email delivery failed; continue saving contacts
+                    failedEmails.Add($"{dto.Email}: {ex.InnerException?.Message ?? ex.Message}");
                 }
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToPage(new { id = cid });
+
+            if (failedEmails.Count > 0)
+            {
+                return new JsonResult(new { success = false, errors = failedEmails });
+            }
+
+            return new JsonResult(new { success = true });
         }
 
         private class ShareContactDto

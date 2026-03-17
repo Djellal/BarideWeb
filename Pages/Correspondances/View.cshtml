@@ -74,6 +74,25 @@
     </div>
 </div>
 
+<!-- Email Error Modal -->
+<div class="modal fade" id="emailErrorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> خطأ في الإرسال</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" dir="rtl">
+                <p>فشل إرسال البريد الإلكتروني إلى العناوين التالية:</p>
+                <ul id="emailErrorList"></ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
 <script>
     // Transfer modal - tom-select for users
@@ -134,5 +153,46 @@
         });
         document.getElementById('contactsJsonInput').value = JSON.stringify(items);
     }
+
+    // Submit share form via AJAX and show errors in modal
+    document.getElementById('shareForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var form = this;
+        var formData = new FormData(form);
+        var submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> جاري الإرسال...';
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                var list = document.getElementById('emailErrorList');
+                list.innerHTML = '';
+                data.errors.forEach(function (err) {
+                    var li = document.createElement('li');
+                    li.textContent = err;
+                    list.appendChild(li);
+                });
+                bootstrap.Modal.getInstance(document.getElementById('shareModal')).hide();
+                new bootstrap.Modal(document.getElementById('emailErrorModal')).show();
+            }
+        })
+        .catch(function () {
+            var list = document.getElementById('emailErrorList');
+            list.innerHTML = '<li>حدث خطأ غير متوقع أثناء الإرسال</li>';
+            bootstrap.Modal.getInstance(document.getElementById('shareModal')).hide();
+            new bootstrap.Modal(document.getElementById('emailErrorModal')).show();
+        })
+        .finally(function () {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-envelope"></i> إرسال';
+        });
+    });
 </script>
 }
