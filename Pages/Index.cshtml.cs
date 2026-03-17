@@ -173,23 +173,25 @@ namespace BarideWeb.Pages
             return RedirectToPage("/Index", new { type });
         }
 
-        public async Task<IActionResult> OnPostTransferAsync(Guid cid, string receiverId, string? note)
+        public async Task<IActionResult> OnPostTransferAsync(Guid cid, List<string> receiverIds, string? note)
         {
             var corresp = await _context.Correspondances.FindAsync(cid);
             if (corresp == null) return NotFound();
 
             var senderId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var transfert = new Transfert
+            foreach (var receiverId in receiverIds)
             {
-                Cid = cid,
-                SenderId = senderId,
-                ReceiverId = receiverId,
-                Note = note,
-                DateTransfert = DateTime.UtcNow
-            };
+                _context.Transferts.Add(new Transfert
+                {
+                    Cid = cid,
+                    SenderId = senderId,
+                    ReceiverId = receiverId,
+                    Note = note,
+                    DateTransfert = DateTime.UtcNow
+                });
+            }
 
-            _context.Transferts.Add(transfert);
             await _context.SaveChangesAsync();
 
             return RedirectToPage("/Index", new { type = (int)(corresp.Type ?? TypeCorresp.Entrant_Interne) });

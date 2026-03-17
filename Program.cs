@@ -118,6 +118,30 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapRazorPages();
 
+// User search API for autocomplete
+app.MapGet("/api/users/search", async (string? q, UserManager<AppUser> userManager, HttpContext httpContext) =>
+{
+    if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+        return Results.Json(Array.Empty<object>());
+
+    var currentUserId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var tenantClaim = httpContext.User.FindFirst("TenantId");
+    Guid? tenantId = tenantClaim != null && Guid.TryParse(tenantClaim.Value, out var tid) ? tid : null;
+
+    var query = userManager.Users
+        .Where(u => u.Id != currentUserId)
+        .Where(u => u.FullName.Contains(q) || u.UserName!.Contains(q));
+
+    if (tenantId.HasValue)
+        query = query.Where(u => u.TenantId == tenantId);
+
+    var users = await query.Take(10)
+        .Select(u => new { u.Id, u.FullName, u.UserName })
+        .ToListAsync();
+
+    return Results.Json(users);
+}).RequireAuthorization();
+
 // Contact search API for autocomplete
 app.MapGet("/api/contacts/search", async (string? q, BarideDbContext db) =>
 {
