@@ -122,7 +122,14 @@ namespace BarideWeb.Pages.Correspondances
                     _context.Contacts.Add(newContact);
                 }
 
-                await _emailService.SendEmailAsync(dto.Email, dto.Name ?? dto.Email, subject, body);
+                try
+                {
+                    await _emailService.SendEmailAsync(dto.Email, dto.Name ?? dto.Email, subject, body);
+                }
+                catch (Exception)
+                {
+                    // Email delivery failed; continue saving contacts
+                }
             }
 
             await _context.SaveChangesAsync();
