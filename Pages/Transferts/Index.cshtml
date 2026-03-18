@@ -8,122 +8,192 @@
 <div class="card">
     <div class="card-header card-header-custom d-flex justify-content-between align-items-center flex-wrap">
         <h5 class="mb-0"><i class="bi bi-arrow-left-right"></i> التحويلات</h5>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover table-bordered mb-0">
-                <thead>
-                    <tr>
-                        <th>المراسلة</th>
-                        <th>المرسل</th>
-                        <th>المرسل إليه</th>
-                        <th>التاريخ</th>
-                        <th>ملاحظة</th>
-                        <th>الحالة</th>
-                        <th>الإجراءات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var t in Model.Transferts)
-                    {
-                        <tr class="@(!t.IsViewed ? "table-warning" : "")">
-                            <td>
-                                <a asp-page="/Correspondances/View" asp-route-id="@t.Cid">@(t.Corresp?.Num ?? "-")</a>
-                            </td>
-                            <td>@(t.Sender?.FullName ?? "-")</td>
-                            <td>@(t.Receiver?.FullName ?? "-")</td>
-                            <td>@t.DateTransfert.ToString("yyyy-MM-dd")</td>
-                            <td>@(t.Note ?? "-")</td>
-                            <td>
-                                @if (t.IsViewed)
-                                {
-                                    <span class="badge bg-success">تمت المعاينة</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-warning text-dark">جديد</span>
-                                }
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    @if (!t.IsViewed)
-                                    {
-                                        <form method="post" asp-page-handler="MarkViewed" class="d-inline">
-                                            <input type="hidden" name="id" value="@t.TransfertId" />
-                                            <button type="submit" class="btn btn-outline-success" title="تمت المعاينة">
-                                                <i class="bi bi-check-circle"></i>
-                                            </button>
-                                        </form>
-                                    }
-                                    @if (User.IsInRole("Admin") || User.IsInRole("TenantAdmin"))
-                                    {
-                                        <button type="button" class="btn btn-outline-warning"
-                                                data-bs-toggle="modal" data-bs-target="#editModal-@t.TransfertId"
-                                                title="تعديل الملاحظة">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-outline-danger"
-                                                data-bs-toggle="modal" data-bs-target="#deleteModal-@t.TransfertId"
-                                                title="حذف">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    }
-                                </div>
-
-                                @if (User.IsInRole("Admin") || User.IsInRole("TenantAdmin"))
-                                {
-                                    <!-- Edit modal -->
-                                    <div class="modal fade" id="editModal-@t.TransfertId" tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <form method="post" asp-page-handler="Edit">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">تعديل الملاحظة</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <input type="hidden" name="id" value="@t.TransfertId" />
-                                                        <div class="mb-3">
-                                                            <label class="form-label">ملاحظة</label>
-                                                            <textarea name="note" class="form-control" rows="3">@t.Note</textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                                        <button type="submit" class="btn btn-warning">حفظ</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Delete modal -->
-                                    <div class="modal fade" id="deleteModal-@t.TransfertId" tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">تأكيد الحذف</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    هل تريد حذف هذا التحويل؟
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لا</button>
-                                                    <form method="post" asp-page-handler="Delete">
-                                                        <input type="hidden" name="id" value="@t.TransfertId" />
-                                                        <button type="submit" class="btn btn-danger">نعم، حذف</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+        <div class="d-flex align-items-center gap-2">
+            <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="بحث..." style="width: 250px;" />
         </div>
     </div>
+    <div class="card-body p-0">
+        <!-- AG Grid -->
+        <div id="transfertGrid" class="ag-theme-alpine" style="width: 100%; height: 500px;"></div>
+    </div>
+
+    <!-- Edit modal (shared) -->
+    @if (User.IsInRole("Admin") || User.IsInRole("TenantAdmin"))
+    {
+        <div class="modal fade" id="editModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" asp-page-handler="Edit">
+                        <div class="modal-header">
+                            <h5 class="modal-title">تعديل الملاحظة</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="id" id="editId" />
+                            <div class="mb-3">
+                                <label class="form-label">ملاحظة</label>
+                                <textarea name="note" id="editNote" class="form-control" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                            <button type="submit" class="btn btn-warning">حفظ</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete modal (shared) -->
+        <div class="modal fade" id="deleteModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">تأكيد الحذف</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        هل تريد حذف هذا التحويل؟
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لا</button>
+                        <form method="post" asp-page-handler="Delete">
+                            <input type="hidden" name="id" id="deleteId" />
+                            <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="status-bar">
+        عدد التحويلات: @Model.Transferts.Count
+    </div>
 </div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        var canEdit = @(User.IsInRole("Admin") || User.IsInRole("TenantAdmin") ? "true" : "false");
+
+        var rowData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Transferts.Select(t => new {
+            transfertId = t.TransfertId,
+            correspNum = t.Corresp != null ? t.Corresp.Num : "-",
+            cid = t.Cid,
+            sender = t.Sender != null ? t.Sender.FullName : "-",
+            receiver = t.Receiver != null ? t.Receiver.FullName : "-",
+            dateTransfert = t.DateTransfert.ToString("yyyy-MM-dd"),
+            note = t.Note ?? "-",
+            isViewed = t.IsViewed,
+            viewUrl = Url.Page("/Correspondances/View", new { id = t.Cid })
+        })));
+
+        var columnDefs = [
+            {
+                field: 'correspNum',
+                headerName: 'المراسلة',
+                filter: true,
+                sortable: true,
+                minWidth: 120,
+                cellRenderer: function (params) {
+                    return '<a href="' + params.data.viewUrl + '">' + params.value + '</a>';
+                }
+            },
+            { field: 'sender', headerName: 'المرسل', filter: true, sortable: true, minWidth: 140, flex: 1 },
+            { field: 'receiver', headerName: 'المرسل إليه', filter: true, sortable: true, minWidth: 140, flex: 1 },
+            { field: 'dateTransfert', headerName: 'التاريخ', filter: 'agDateColumnFilter', sortable: true, minWidth: 120 },
+            { field: 'note', headerName: 'ملاحظة', filter: true, sortable: true, minWidth: 150, flex: 1 },
+            {
+                field: 'isViewed',
+                headerName: 'الحالة',
+                filter: true,
+                sortable: true,
+                minWidth: 110,
+                cellRenderer: function (params) {
+                    if (params.value) {
+                        return '<span class="badge bg-success">تمت المعاينة</span>';
+                    }
+                    return '<span class="badge bg-warning text-dark">جديد</span>';
+                }
+            },
+            {
+                headerName: 'الإجراءات',
+                minWidth: canEdit ? 140 : 60,
+                sortable: false,
+                filter: false,
+                cellRenderer: function (params) {
+                    var html = '<div class="btn-group btn-group-sm">';
+                    if (!params.data.isViewed) {
+                        html += '<button type="button" class="btn btn-outline-success" onclick="markViewed(\'' + params.data.transfertId + '\')" title="تمت المعاينة"><i class="bi bi-check-circle"></i></button>';
+                    }
+                    if (canEdit) {
+                        html += '<button type="button" class="btn btn-outline-warning" onclick="openEdit(\'' + params.data.transfertId + '\', \'' + encodeURIComponent(params.data.note === '-' ? '' : params.data.note) + '\')" title="تعديل الملاحظة"><i class="bi bi-pencil"></i></button>';
+                        html += '<button type="button" class="btn btn-outline-danger" onclick="confirmDelete(\'' + params.data.transfertId + '\')" title="حذف"><i class="bi bi-trash"></i></button>';
+                    }
+                    html += '</div>';
+                    return html;
+                }
+            }
+        ];
+
+        var gridOptions = {
+            columnDefs: columnDefs,
+            rowData: rowData,
+            defaultColDef: {
+                resizable: true
+            },
+            enableRtl: true,
+            animateRows: true,
+            rowSelection: 'single',
+            overlayNoRowsTemplate: '<div class="text-center text-muted py-5"><i class="bi bi-inbox" style="font-size: 2.5rem; opacity: 0.3;"></i><p class="mt-2 mb-0">لا توجد تحويلات</p></div>',
+            getRowClass: function (params) {
+                return !params.data.isViewed ? 'ag-row-warning' : '';
+            }
+        };
+
+        var gridDiv = document.getElementById('transfertGrid');
+        var gridInstance = new agGrid.Grid(gridDiv, gridOptions);
+
+        // Search / Quick filter
+        document.getElementById('searchInput').addEventListener('input', function () {
+            gridOptions.api.setQuickFilter(this.value);
+        });
+
+        // Mark as viewed via hidden form post
+        function markViewed(id) {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '?handler=MarkViewed';
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'id';
+            input.value = id;
+            form.appendChild(input);
+            var token = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (token) {
+                var t = document.createElement('input');
+                t.type = 'hidden';
+                t.name = '__RequestVerificationToken';
+                t.value = token.value;
+                form.appendChild(t);
+            }
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function openEdit(id, encodedNote) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editNote').value = decodeURIComponent(encodedNote);
+            var modal = new bootstrap.Modal(document.getElementById('editModal'));
+            modal.show();
+        }
+
+        function confirmDelete(id) {
+            document.getElementById('deleteId').value = id;
+            var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+    </script>
+}

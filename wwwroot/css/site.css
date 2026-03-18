@@ -417,3 +417,8 @@ footer {
         flex-shrink: 0;
     }
 }
+
+/* AG Grid: highlight unviewed rows */
+.ag-row-warning {
+    background-color: #fff3cd !important;
+}
