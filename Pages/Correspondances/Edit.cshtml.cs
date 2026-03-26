@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BarideWeb.Data;
 using BarideWeb.Models;
+using BarideWeb.Services;
 
 namespace BarideWeb.Pages.Correspondances
 {
@@ -66,7 +67,7 @@ namespace BarideWeb.Pages.Correspondances
             // Handle new file uploads
             foreach (var file in newFiles)
             {
-                if (file.Length > 21_000_000) continue;
+                if (!FileValidation.IsValidFile(file)) continue;
 
                 var doc = new Doc
                 {
@@ -95,6 +96,8 @@ namespace BarideWeb.Pages.Correspondances
                 {
                     foreach (var sf in scannedFiles)
                     {
+                        if (!FileValidation.IsValidScannedExtension(sf.Name)) continue;
+
                         var doc = new Doc
                         {
                             DocId = Guid.NewGuid(),

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BarideWeb.Migrations
 {
     [DbContext(typeof(BarideDbContext))]
-    [Migration("20260314085540_AddTransfert")]
-    partial class AddTransfert
+    [Migration("20260326090148_createdb")]
+    partial class createdb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,6 +61,30 @@ namespace BarideWeb.Migrations
                             Key = "CorrespViewMode",
                             TenantId = new Guid("b0000000-0000-0000-0000-000000000001"),
                             Value = "0"
+                        },
+                        new
+                        {
+                            ParamId = new Guid("c0000000-0000-0000-0000-000000000010"),
+                            Description = "الدقة الافتراضية للماسح الضوئي (DPI): 100, 150, 200, 300, 600",
+                            Key = "ScannerDpi",
+                            TenantId = new Guid("b0000000-0000-0000-0000-000000000001"),
+                            Value = "200"
+                        },
+                        new
+                        {
+                            ParamId = new Guid("c0000000-0000-0000-0000-000000000011"),
+                            Description = "وضع اللون الافتراضي للماسح الضوئي: Color, Grayscale",
+                            Key = "ScannerPixelMode",
+                            TenantId = new Guid("b0000000-0000-0000-0000-000000000001"),
+                            Value = "Grayscale"
+                        },
+                        new
+                        {
+                            ParamId = new Guid("c0000000-0000-0000-0000-000000000012"),
+                            Description = "صيغة الصورة الافتراضية للماسح الضوئي: JPG, PNG, PDF",
+                            Key = "ScannerImageFormat",
+                            TenantId = new Guid("b0000000-0000-0000-0000-000000000001"),
+                            Value = "PDF"
                         });
                 });
 
@@ -225,6 +249,31 @@ namespace BarideWeb.Migrations
                         });
                 });
 
+            modelBuilder.Entity("BarideWeb.Models.Contact", b =>
+                {
+                    b.Property<Guid>("ContactId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("ContactId");
+
+                    b.ToTable("Contacts");
+                });
+
             modelBuilder.Entity("BarideWeb.Models.Corresp", b =>
                 {
                     b.Property<Guid>("Cid")
@@ -235,6 +284,12 @@ namespace BarideWeb.Migrations
 
                     b.Property<Guid>("CorrespRep")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("DateArrivDepart")
                         .HasColumnType("timestamp with time zone");
@@ -269,6 +324,9 @@ namespace BarideWeb.Migrations
 
                     b.Property<int?>("Type")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Cid");
 
@@ -335,6 +393,12 @@ namespace BarideWeb.Migrations
                     b.Property<Guid>("Cid")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("DateTransfert")
                         .HasColumnType("timestamp with time zone");
 
@@ -352,6 +416,9 @@ namespace BarideWeb.Migrations
 
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("TransfertId");
 

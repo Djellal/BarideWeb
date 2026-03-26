@@ -282,6 +282,12 @@ namespace BarideWeb.Migrations
                     b.Property<Guid>("CorrespRep")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("DateArrivDepart")
                         .HasColumnType("timestamp with time zone");
 
@@ -315,6 +321,9 @@ namespace BarideWeb.Migrations
 
                     b.Property<int?>("Type")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Cid");
 
@@ -381,6 +390,12 @@ namespace BarideWeb.Migrations
                     b.Property<Guid>("Cid")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("DateTransfert")
                         .HasColumnType("timestamp with time zone");
 
@@ -398,6 +413,9 @@ namespace BarideWeb.Migrations
 
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("TransfertId");
 

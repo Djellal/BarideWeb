@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BarideWeb.Models
 {
-    public class AppParameter
+    public class AppParameter : ITenantEntity
     {
         public AppParameter()
         {

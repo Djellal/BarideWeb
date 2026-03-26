@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BarideWeb.Models
 {
-    public class Categorie
+    public class Categorie : ITenantEntity
     {
         public Categorie()
         {

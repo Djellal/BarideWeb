@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BarideWeb.Models
 {
-    public class Corresp
+    public class Corresp : ITenantEntity, IAuditable
     {
         public Corresp()
         {
@@ -61,5 +61,9 @@ namespace BarideWeb.Models
         public Tenant? Tenant { get; set; }
 
         public ICollection<Doc> Docs { get; set; } = new List<Doc>();
+
+        public DateTime CreatedAt { get; set; }
+        public string? CreatedBy { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }

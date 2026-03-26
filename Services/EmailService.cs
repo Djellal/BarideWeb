@@ -12,37 +12,48 @@ namespace BarideWeb.Services
     public class EmailService : IEmailService
     {
         private readonly IConfiguration _config;
+        private readonly ILogger<EmailService> _logger;
 
-        public EmailService(IConfiguration config)
+        public EmailService(IConfiguration config, ILogger<EmailService> logger)
         {
             _config = config;
+            _logger = logger;
         }
 
         public async Task SendEmailAsync(string toEmail, string toName, string subject, string htmlBody)
         {
-            var smtp = _config.GetSection("SmtpSettings");
-            var host = smtp["Host"]!;
-            var port = int.Parse(smtp["Port"]!);
-            var username = smtp["Username"]!;
-            var password = smtp["Password"]!;
-            var fromEmail = smtp["FromEmail"]!;
-            var fromName = smtp["FromName"] ?? "BaridUFAS";
-
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(fromName, fromEmail));
-            message.To.Add(new MailboxAddress(toName, toEmail));
-            message.Subject = subject;
-
-            message.Body = new TextPart("html")
+            try
             {
-                Text = htmlBody
-            };
+                var smtp = _config.GetSection("SmtpSettings");
+                var host = smtp["Host"]!;
+                var port = int.Parse(smtp["Port"]!);
+                var username = smtp["Username"]!;
+                var password = smtp["Password"]!;
+                var fromEmail = smtp["FromEmail"]!;
+                var fromName = smtp["FromName"] ?? "BaridUFAS";
 
-            using var client = new SmtpClient();
-            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
-            await client.AuthenticateAsync(username, password);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(fromName, fromEmail));
+                message.To.Add(new MailboxAddress(toName, toEmail));
+                message.Subject = subject;
+
+                message.Body = new TextPart("html")
+                {
+                    Text = htmlBody
+                };
+
+                using var client = new SmtpClient();
+                await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync(username, password);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+
+                _logger.LogInformation("Email sent to {ToEmail}", toEmail);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send email to {ToEmail}", toEmail);
+            }
         }
     }
 }

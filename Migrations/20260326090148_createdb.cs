@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BarideWeb.Migrations
 {
     /// <inheritdoc />
-    public partial class initdb : Migration
+    public partial class createdb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -26,6 +26,20 @@ namespace BarideWeb.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetRoles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Contacts",
+                columns: table => new
+                {
+                    ContactId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Email = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Phone = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Contacts", x => x.ContactId);
                 });
 
             migrationBuilder.CreateTable(
@@ -231,7 +245,10 @@ namespace BarideWeb.Migrations
                     CorrespRep = table.Column<Guid>(type: "uuid", nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: true),
                     CatId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TenantId = table.Column<Guid>(type: "uuid", nullable: true)
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -270,6 +287,48 @@ namespace BarideWeb.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Transferts",
+                columns: table => new
+                {
+                    TransfertId = table.Column<Guid>(type: "uuid", nullable: false),
+                    DateTransfert = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Note = table.Column<string>(type: "text", nullable: true),
+                    IsViewed = table.Column<bool>(type: "boolean", nullable: false),
+                    Cid = table.Column<Guid>(type: "uuid", nullable: false),
+                    SenderId = table.Column<string>(type: "text", nullable: true),
+                    ReceiverId = table.Column<string>(type: "text", nullable: true),
+                    TenantId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedBy = table.Column<string>(type: "text", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Transferts", x => x.TransfertId);
+                    table.ForeignKey(
+                        name: "FK_Transferts_AspNetUsers_ReceiverId",
+                        column: x => x.ReceiverId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Transferts_AspNetUsers_SenderId",
+                        column: x => x.SenderId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Transferts_Correspondances_Cid",
+                        column: x => x.Cid,
+                        principalTable: "Correspondances",
+                        principalColumn: "Cid",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Transferts_Tenants_TenantId",
+                        column: x => x.TenantId,
+                        principalTable: "Tenants",
+                        principalColumn: "TenantId");
+                });
+
             migrationBuilder.InsertData(
                 table: "Tenants",
                 columns: new[] { "TenantId", "Name" },
@@ -296,7 +355,13 @@ namespace BarideWeb.Migrations
             migrationBuilder.InsertData(
                 table: "Parameters",
                 columns: new[] { "ParamId", "Description", "Key", "TenantId", "Value" },
-                values: new object[] { new Guid("c0000000-0000-0000-0000-000000000001"), "طريقة عرض المراسلة: 0=في صفحة جديدة، 1=في نافذة منبثقة، 2=في نفس الصفحة", "CorrespViewMode", new Guid("b0000000-0000-0000-0000-000000000001"), "0" });
+                values: new object[,]
+                {
+                    { new Guid("c0000000-0000-0000-0000-000000000001"), "طريقة عرض المراسلة: 0=في صفحة جديدة، 1=في نافذة منبثقة، 2=في نفس الصفحة", "CorrespViewMode", new Guid("b0000000-0000-0000-0000-000000000001"), "0" },
+                    { new Guid("c0000000-0000-0000-0000-000000000010"), "الدقة الافتراضية للماسح الضوئي (DPI): 100, 150, 200, 300, 600", "ScannerDpi", new Guid("b0000000-0000-0000-0000-000000000001"), "200" },
+                    { new Guid("c0000000-0000-0000-0000-000000000011"), "وضع اللون الافتراضي للماسح الضوئي: Color, Grayscale", "ScannerPixelMode", new Guid("b0000000-0000-0000-0000-000000000001"), "Grayscale" },
+                    { new Guid("c0000000-0000-0000-0000-000000000012"), "صيغة الصورة الافتراضية للماسح الضوئي: JPG, PNG, PDF", "ScannerImageFormat", new Guid("b0000000-0000-0000-0000-000000000001"), "PDF" }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -364,6 +429,26 @@ namespace BarideWeb.Migrations
                 name: "IX_Parameters_TenantId",
                 table: "Parameters",
                 column: "TenantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transferts_Cid",
+                table: "Transferts",
+                column: "Cid");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transferts_ReceiverId",
+                table: "Transferts",
+                column: "ReceiverId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transferts_SenderId",
+                table: "Transferts",
+                column: "SenderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Transferts_TenantId",
+                table: "Transferts",
+                column: "TenantId");
         }
 
         /// <inheritdoc />
@@ -385,10 +470,16 @@ namespace BarideWeb.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "Contacts");
+
+            migrationBuilder.DropTable(
                 name: "Documents");
 
             migrationBuilder.DropTable(
                 name: "Parameters");
+
+            migrationBuilder.DropTable(
+                name: "Transferts");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

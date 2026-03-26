@@ -2,17 +2,21 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using BarideWeb.Models;
 using BarideWeb.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace BarideWeb.Data
 {
     public class BarideDbContext : IdentityDbContext<AppUser>
     {
         private readonly ITenantService? _tenantService;
+        private readonly IHttpContextAccessor? _httpContextAccessor;
 
-        public BarideDbContext(DbContextOptions<BarideDbContext> options, ITenantService? tenantService = null)
+        public BarideDbContext(DbContextOptions<BarideDbContext> options, ITenantService? tenantService = null, IHttpContextAccessor? httpContextAccessor = null)
             : base(options)
         {
             _tenantService = tenantService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public DbSet<Tenant> Tenants { get; set; }
@@ -92,13 +96,34 @@ namespace BarideWeb.Data
         public override int SaveChanges()
         {
             SetTenantId();
+            SetAuditFields();
             return base.SaveChanges();
         }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             SetTenantId();
+            SetAuditFields();
             return base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void SetAuditFields()
+        {
+            var now = DateTime.UtcNow;
+            var userId = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            foreach (var entry in ChangeTracker.Entries<IAuditable>())
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedAt = now;
+                    entry.Entity.CreatedBy = userId;
+                }
+                else if (entry.State == EntityState.Modified)
+                {
+                    entry.Entity.UpdatedAt = now;
+                }
+            }
         }
 
         private void SetTenantId()
@@ -106,22 +131,8 @@ namespace BarideWeb.Data
             var tenantId = _tenantService?.GetCurrentTenantId();
             if (tenantId == null) return;
 
-            foreach (var entry in ChangeTracker.Entries<Categorie>().Where(e => e.State == EntityState.Added && e.Entity.TenantId == null))
-            {
-                entry.Entity.TenantId = tenantId;
-            }
-
-            foreach (var entry in ChangeTracker.Entries<Corresp>().Where(e => e.State == EntityState.Added && e.Entity.TenantId == null))
-            {
-                entry.Entity.TenantId = tenantId;
-            }
-
-            foreach (var entry in ChangeTracker.Entries<AppParameter>().Where(e => e.State == EntityState.Added && e.Entity.TenantId == null))
-            {
-                entry.Entity.TenantId = tenantId;
-            }
-
-            foreach (var entry in ChangeTracker.Entries<Transfert>().Where(e => e.State == EntityState.Added && e.Entity.TenantId == null))
+            foreach (var entry in ChangeTracker.Entries<ITenantEntity>()
+                .Where(e => e.State == EntityState.Added && e.Entity.TenantId == null))
             {
                 entry.Entity.TenantId = tenantId;
             }

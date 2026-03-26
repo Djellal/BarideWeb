@@ -145,7 +145,7 @@
     </div>
 
     <div class="status-bar">
-        عدد المراسلات: @Model.Correspondances.Count
+        عدد المراسلات: <span id="totalCount">0</span>
     </div>
 </div>
 
@@ -235,7 +235,6 @@
                 item.classList.remove('active');
             });
             el.classList.add('active');
-
             var viewer = container.querySelector('.doc-preview');
             if (!viewer) return;
             var ext = url.split('.').pop().toLowerCase();
@@ -259,6 +258,8 @@
                 .then(function (r) { return r.text(); })
                 .then(function (html) {
                     body.innerHTML = html;
+                    var first = body.querySelector('.doc-list .doc-item[onclick]');
+                    if (first) first.click();
                 });
         }
 
@@ -269,56 +270,39 @@
         }
 
         var viewMode = @((int)Model.CorrespViewMode);
+        var searchText = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SearchText ?? ""));
         var searchAll = @(Model.SearchAll ? "true" : "false");
         var canEdit = @(User.IsInRole("Admin") || User.IsInRole("TenantAdmin") ? "true" : "false");
-
-        var rowData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Correspondances.Select(c => new {
-            cid = c.Cid,
-            num = c.Num,
-            numInterne = c.NumInterne,
-            dateCorresp = c.DateCorresp.ToString("yyyy-MM-dd"),
-            dateArrivDepart = c.DateArrivDepart.ToString("yyyy-MM-dd"),
-            expediteur = c.Expediteur,
-            objet = c.Objet,
-            observation = c.Observation ?? "",
-            categorie = c.Categ != null ? c.Categ.Designation : "",
-            typeLabel = c.Type switch {
-                TypeCorresp.Entrant_Interne => "وارد داخلي",
-                TypeCorresp.Entrant_Externe => "وارد خارجي",
-                TypeCorresp.Sotant_Interne => "صادر داخلي",
-                TypeCorresp.Sortant_Externe => "صادر خارجي",
-                TypeCorresp.Divers => "متفرقات",
-                _ => ""
-            },
-            viewUrl = Url.Page("/Correspondances/View", new { id = c.Cid }),
-            editUrl = Url.Page("/Correspondances/Edit", new { id = c.Cid }),
-            transfertCount = Model.TransfertCounts.GetValueOrDefault(c.Cid, 0),
-            transfertUrl = Url.Page("/Transferts/Index", new { cid = c.Cid })
-        })));
+        var currentType = @((int)Model.CurrentType);
+        var filterCatId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.FilterCatId?.ToString() ?? ""));
+        var filterExped = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.FilterExped ?? ""));
+        var filterObjet = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.FilterObjet ?? ""));
+        var filterDateFrom = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.FilterDateFrom?.ToString("yyyy-MM-dd") ?? ""));
+        var filterDateTo = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.FilterDateTo?.ToString("yyyy-MM-dd") ?? ""));
 
         var columnDefs = [
-            { field: 'num', headerName: 'الرقم', filter: true, sortable: true, minWidth: 100 },
-            { field: 'numInterne', headerName: 'الرقم الداخلي', filter: true, sortable: true, minWidth: 120 },
-            { field: 'dateCorresp', headerName: 'تاريخ المراسلة', filter: 'agDateColumnFilter', sortable: true, minWidth: 130 },
-            { field: 'dateArrivDepart', headerName: 'تاريخ الوصول', filter: 'agDateColumnFilter', sortable: true, minWidth: 130 },
-            { field: 'expediteur', headerName: 'المرسل', filter: true, sortable: true, minWidth: 150, flex: 1 },
-            { field: 'objet', headerName: 'الموضوع', filter: true, sortable: true, minWidth: 200, flex: 2 },
-            { field: 'observation', headerName: 'ملاحظة', filter: true, sortable: true, minWidth: 130 },
-            { field: 'categorie', headerName: 'الصنف', filter: true, sortable: true, minWidth: 120 }
+            { field: 'num', headerName: 'الرقم', sortable: true, minWidth: 100 },
+            { field: 'numInterne', headerName: 'الرقم الداخلي', sortable: true, minWidth: 120 },
+            { field: 'dateCorresp', headerName: 'تاريخ المراسلة', sortable: true, minWidth: 130 },
+            { field: 'dateArrivDepart', headerName: 'تاريخ الوصول', sortable: true, minWidth: 130 },
+            { field: 'expediteur', headerName: 'المرسل', sortable: true, minWidth: 150, flex: 1 },
+            { field: 'objet', headerName: 'الموضوع', sortable: true, minWidth: 200, flex: 2 },
+            { field: 'observation', headerName: 'ملاحظة', sortable: true, minWidth: 130 },
+            { field: 'categorie', headerName: 'الصنف', sortable: true, minWidth: 120 }
         ];
 
         if (searchAll) {
-            columnDefs.push({ field: 'typeLabel', headerName: 'النوع', filter: true, sortable: true, minWidth: 110 });
+            columnDefs.push({ field: 'typeLabel', headerName: 'النوع', sortable: true, minWidth: 110 });
         }
 
         columnDefs.push({
             headerName: 'التحويلات',
             minWidth: 90,
-            sortable: true,
-            filter: false,
+            sortable: false,
             cellRenderer: function (params) {
+                if (!params.data) return '';
                 if (params.data.transfertCount > 0) {
-                    return '<a href="' + params.data.transfertUrl + '" class="badge bg-info text-white text-decoration-none" title="عرض التحويلات"><i class="bi bi-send"></i> ' + params.data.transfertCount + '</a>';
+                    return '<a href="/Transferts?cid=' + params.data.cid + '" class="badge bg-info text-white text-decoration-none" title="عرض التحويلات"><i class="bi bi-send"></i> ' + params.data.transfertCount + '</a>';
                 }
                 return '<span class="text-muted">-</span>';
             }
@@ -328,12 +312,14 @@
             headerName: 'الإجراءات',
             minWidth: canEdit ? 140 : 60,
             sortable: false,
-            filter: false,
             cellRenderer: function (params) {
+                if (!params.data) return '';
+                var viewUrl = '/Correspondances/View?id=' + params.data.cid;
+                var editUrl = '/Correspondances/Edit?id=' + params.data.cid;
                 var html = '<div class="btn-group btn-group-sm">'
-                    + '<a class="btn btn-outline-primary" href="' + params.data.viewUrl + '" title="عرض"><i class="bi bi-eye"></i></a>';
+                    + '<a class="btn btn-outline-primary" href="' + viewUrl + '" title="عرض"><i class="bi bi-eye"></i></a>';
                 if (canEdit) {
-                    html += '<a class="btn btn-outline-warning" href="' + params.data.editUrl + '" title="تعديل"><i class="bi bi-pencil"></i></a>'
+                    html += '<a class="btn btn-outline-warning" href="' + editUrl + '" title="تعديل"><i class="bi bi-pencil"></i></a>'
                         + '<button type="button" class="btn btn-outline-danger" onclick="confirmDelete(\'' + params.data.cid + '\')" title="حذف"><i class="bi bi-trash"></i></button>';
                 }
                 html += '</div>';
@@ -341,25 +327,59 @@
             }
         });
 
+        var dataSource = {
+            getRows: function (params) {
+                var sortField = '';
+                var sortDir = '';
+                if (params.sortModel && params.sortModel.length > 0) {
+                    sortField = params.sortModel[0].colId;
+                    sortDir = params.sortModel[0].sort;
+                }
+
+                var url = '/api/correspondances?startRow=' + params.startRow + '&endRow=' + params.endRow
+                    + '&type=' + currentType;
+                if (searchText) url += '&search=' + encodeURIComponent(searchText);
+                if (filterCatId) url += '&catId=' + filterCatId;
+                if (filterExped) url += '&exped=' + encodeURIComponent(filterExped);
+                if (filterObjet) url += '&objet=' + encodeURIComponent(filterObjet);
+                if (filterDateFrom) url += '&dateFrom=' + filterDateFrom;
+                if (filterDateTo) url += '&dateTo=' + filterDateTo;
+                if (sortField) url += '&sortField=' + sortField + '&sortDir=' + sortDir;
+
+                fetch(url)
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        document.getElementById('totalCount').textContent = data.totalCount;
+                        var lastRow = data.totalCount <= params.endRow ? data.totalCount : -1;
+                        params.successCallback(data.rows, lastRow);
+                    })
+                    .catch(function () {
+                        params.failCallback();
+                    });
+            }
+        };
+
         var gridOptions = {
             columnDefs: columnDefs,
-            rowData: rowData,
-            defaultColDef: {
-                resizable: true
-            },
+            defaultColDef: { resizable: true },
+            rowModelType: 'infinite',
+            datasource: dataSource,
+            cacheBlockSize: 50,
+            maxBlocksInCache: 10,
             enableRtl: true,
             animateRows: true,
             rowSelection: 'single',
             overlayNoRowsTemplate: '<div class="text-center text-muted py-5"><i class="bi bi-inbox" style="font-size: 2.5rem; opacity: 0.3;"></i><p class="mt-2 mb-0">لا توجد مراسلات</p></div>',
             onRowClicked: function (event) {
-                if (event.event.target.closest('.btn-group')) return;
+                if (!event.data || event.event.target.closest('.btn-group')) return;
                 var cid = event.data.cid;
+                var viewUrl = '/Correspondances/View?id=' + cid;
                 if (viewMode === 1) {
                     loadViewModal(cid);
                 } else if (viewMode === 0) {
-                    window.open(event.data.viewUrl, '_blank');
+                    window.open(viewUrl, '_blank');
                 } else {
-                    window.location.href = event.data.viewUrl;
+                    window.location.href = viewUrl;
                 }
             }
         };
@@ -367,7 +387,6 @@
         var gridDiv = document.getElementById('correspGrid');
         new agGrid.Grid(gridDiv, gridOptions);
 
-        // Set cid when transfer/share modals are opened from the partial view
         document.getElementById('transferModal').addEventListener('show.bs.modal', function (e) {
             var btn = e.relatedTarget;
             if (btn) {
@@ -383,7 +402,6 @@
             }
         });
 
-        // Transfer modal - tom-select for users
         new TomSelect('#transferUserSelect', {
             valueField: 'id',
             labelField: 'fullName',
@@ -406,7 +424,6 @@
             }
         });
 
-        // Share modal - tom-select for contacts with create
         var shareSelect = new TomSelect('#shareContactSelect', {
             valueField: 'email',
             labelField: 'name',

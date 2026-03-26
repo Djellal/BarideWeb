@@ -158,6 +158,117 @@ app.MapGet("/api/contacts/search", async (string? q, BarideDbContext db) =>
     return Results.Json(contacts);
 }).RequireAuthorization();
 
+// Server-side AG Grid data source
+app.MapGet("/api/correspondances", async (
+    int startRow,
+    int endRow,
+    int? type,
+    string? search,
+    Guid? catId,
+    string? exped,
+    string? objet,
+    DateTime? dateFrom,
+    DateTime? dateTo,
+    string? sortField,
+    string? sortDir,
+    BarideDbContext db,
+    HttpContext httpContext) =>
+{
+    IQueryable<Corresp> query = db.Correspondances.Include(c => c.Categ);
+
+    if (!string.IsNullOrWhiteSpace(search))
+    {
+        query = query.Where(c =>
+            c.Num.Contains(search) ||
+            c.NumInterne.Contains(search) ||
+            c.Expediteur.Contains(search) ||
+            c.Objet.Contains(search) ||
+            (c.Observation != null && c.Observation.Contains(search)));
+    }
+    else if (type.HasValue)
+    {
+        var tp = (TypeCorresp)type.Value;
+        query = query.Where(c => c.Type == tp);
+    }
+
+    if (catId.HasValue)
+        query = query.Where(c => c.CatId == catId.Value);
+    if (!string.IsNullOrWhiteSpace(exped))
+        query = query.Where(c => c.Expediteur.Contains(exped));
+    if (!string.IsNullOrWhiteSpace(objet))
+        query = query.Where(c => c.Objet.Contains(objet));
+    if (dateFrom.HasValue)
+        query = query.Where(c => c.DateCorresp >= dateFrom.Value);
+    if (dateTo.HasValue)
+        query = query.Where(c => c.DateCorresp <= dateTo.Value.AddDays(1));
+
+    var totalCount = await query.CountAsync();
+
+    // Sorting
+    query = sortField switch
+    {
+        "num" => sortDir == "asc" ? query.OrderBy(c => c.Num) : query.OrderByDescending(c => c.Num),
+        "numInterne" => sortDir == "asc" ? query.OrderBy(c => c.NumInterne) : query.OrderByDescending(c => c.NumInterne),
+        "dateCorresp" => sortDir == "asc" ? query.OrderBy(c => c.DateCorresp) : query.OrderByDescending(c => c.DateCorresp),
+        "dateArrivDepart" => sortDir == "asc" ? query.OrderBy(c => c.DateArrivDepart) : query.OrderByDescending(c => c.DateArrivDepart),
+        "expediteur" => sortDir == "asc" ? query.OrderBy(c => c.Expediteur) : query.OrderByDescending(c => c.Expediteur),
+        "objet" => sortDir == "asc" ? query.OrderBy(c => c.Objet) : query.OrderByDescending(c => c.Objet),
+        "observation" => sortDir == "asc" ? query.OrderBy(c => c.Observation) : query.OrderByDescending(c => c.Observation),
+        "categorie" => sortDir == "asc" ? query.OrderBy(c => c.Categ!.Designation) : query.OrderByDescending(c => c.Categ!.Designation),
+        _ => query.OrderByDescending(c => c.DateArrivDepart)
+    };
+
+    var pageSize = endRow - startRow;
+    var rows = await query.Skip(startRow).Take(pageSize)
+        .Select(c => new
+        {
+            cid = c.Cid,
+            num = c.Num,
+            numInterne = c.NumInterne,
+            dateCorresp = c.DateCorresp.ToString("yyyy-MM-dd"),
+            dateArrivDepart = c.DateArrivDepart.ToString("yyyy-MM-dd"),
+            expediteur = c.Expediteur,
+            objet = c.Objet,
+            observation = c.Observation ?? "",
+            categorie = c.Categ != null ? c.Categ.Designation : "",
+            type = (int?)c.Type
+        })
+        .ToListAsync();
+
+    // Get transfert counts for this page
+    var cids = rows.Select(r => r.cid).ToList();
+    var transfertCounts = await db.Transferts
+        .Where(t => cids.Contains(t.Cid))
+        .GroupBy(t => t.Cid)
+        .Select(g => new { g.Key, Count = g.Count() })
+        .ToDictionaryAsync(x => x.Key, x => x.Count);
+
+    var result = rows.Select(r => new
+    {
+        r.cid,
+        r.num,
+        r.numInterne,
+        r.dateCorresp,
+        r.dateArrivDepart,
+        r.expediteur,
+        r.objet,
+        r.observation,
+        r.categorie,
+        typeLabel = r.type switch
+        {
+            0 => "وارد داخلي",
+            1 => "وارد خارجي",
+            2 => "صادر داخلي",
+            3 => "صادر خارجي",
+            4 => "متفرقات",
+            _ => ""
+        },
+        transfertCount = transfertCounts.GetValueOrDefault(r.cid, 0)
+    });
+
+    return Results.Json(new { rows = result, totalCount });
+}).RequireAuthorization();
+
 app.Run("http://localhost:5226");
 
 // Custom claims principal factory that adds TenantId as a claim

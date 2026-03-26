@@ -60,49 +60,11 @@ namespace BarideWeb.Pages
 
             Categories = await _context.Categories.ToListAsync();
 
-            IQueryable<Corresp> query = _context.Correspondances
-                .Include(c => c.Categ);
-
-            // Text search across all types, or filter by current type
+            // Search across all types when search text is provided
             if (!string.IsNullOrWhiteSpace(search))
             {
-                query = query.Where(c =>
-                    c.Num.Contains(search) ||
-                    c.NumInterne.Contains(search) ||
-                    c.Expediteur.Contains(search) ||
-                    c.Objet.Contains(search) ||
-                    (c.Observation != null && c.Observation.Contains(search)));
                 SearchAll = true;
             }
-            else
-            {
-                query = query.Where(c => c.Type == CurrentType);
-            }
-
-            // Advanced filters
-            if (catId.HasValue)
-                query = query.Where(c => c.CatId == catId.Value);
-
-            if (!string.IsNullOrWhiteSpace(exped))
-                query = query.Where(c => c.Expediteur.Contains(exped));
-
-            if (!string.IsNullOrWhiteSpace(objet))
-                query = query.Where(c => c.Objet.Contains(objet));
-
-            if (dateFrom.HasValue)
-                query = query.Where(c => c.DateCorresp >= dateFrom.Value);
-
-            if (dateTo.HasValue)
-                query = query.Where(c => c.DateCorresp <= dateTo.Value.AddDays(1));
-
-            Correspondances = await query.OrderByDescending(c => c.DateArrivDepart).ToListAsync();
-
-            var cids = Correspondances.Select(c => c.Cid).ToList();
-            TransfertCounts = await _context.Transferts
-                .Where(t => cids.Contains(t.Cid))
-                .GroupBy(t => t.Cid)
-                .Select(g => new { g.Key, Count = g.Count() })
-                .ToDictionaryAsync(x => x.Key, x => x.Count);
 
             // Load view mode parameter
             var viewModeParam = await _context.Parameters

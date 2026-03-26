@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BarideWeb.Models
 {
-    public class Transfert
+    public class Transfert : ITenantEntity, IAuditable
     {
         public Transfert()
         {
@@ -44,5 +44,9 @@ namespace BarideWeb.Models
         public Guid? TenantId { get; set; }
 
         public Tenant? Tenant { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+        public string? CreatedBy { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }
