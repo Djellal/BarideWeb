@@ -86,6 +86,47 @@ namespace BarideWeb.Pages.Account.Users
             return RedirectToPage();
         }
 
+        public async Task<IActionResult> OnPostEditAsync(string userId, string fullName, string role, Guid? tenantId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null || user.UserName == "admin")
+                return RedirectToPage();
+
+            var isGlobalAdmin = User.IsInRole("Admin");
+
+            // TenantAdmin can only edit users in their own tenant
+            if (!isGlobalAdmin)
+            {
+                var currentTenantId = GetCurrentTenantId();
+                if (user.TenantId != currentTenantId)
+                    return RedirectToPage();
+                tenantId = currentTenantId; // keep same tenant
+                if (role == "Admin") role = "User"; // can't promote to global admin
+            }
+
+            user.FullName = fullName;
+            if (isGlobalAdmin)
+                user.TenantId = tenantId;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                StatusMessage = "خطأ: " + string.Join(", ", updateResult.Errors.Select(e => e.Description));
+                IsGlobalAdmin = isGlobalAdmin;
+                Tenants = await _context.Tenants.ToListAsync();
+                await LoadUsersAsync();
+                return Page();
+            }
+
+            // Update role
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            if (currentRoles.Any())
+                await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            await _userManager.AddToRoleAsync(user, role);
+
+            return RedirectToPage(new { message = $"تم تعديل المستخدم {user.UserName}" });
+        }
+
         public async Task<IActionResult> OnPostResetPasswordAsync(string userId, string newPassword)
         {
             var user = await _userManager.FindByIdAsync(userId);

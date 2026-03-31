@@ -60,6 +60,11 @@
                                             title="إعادة تعيين كلمة المرور">
                                         <i class="bi bi-key"></i>
                                     </button>
+                                    <button type="button" class="btn btn-outline-primary"
+                                            data-bs-toggle="modal" data-bs-target="#editModal-@user.Id"
+                                            title="تعديل" disabled="@(user.UserName == "admin")">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
                                 </div>
 
                                 <!-- Delete modal -->
@@ -103,6 +108,55 @@
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
                                                     <button type="submit" class="btn btn-warning">تغيير</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Edit user modal -->
+                                <div class="modal fade" id="editModal-@user.Id" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form method="post" asp-page-handler="Edit">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">تعديل المستخدم - @user.UserName</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="userId" value="@user.Id" />
+                                                    <div class="mb-3">
+                                                        <label class="form-label">الاسم الكامل</label>
+                                                        <input type="text" name="fullName" class="form-control" value="@user.FullName" required />
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">الدور</label>
+                                                        <select name="role" class="form-select">
+                                                            <option value="User" selected="@(user.Role == "User")">مستخدم</option>
+                                                            <option value="TenantAdmin" selected="@(user.Role == "TenantAdmin")">مدير مؤسسة</option>
+                                                            @if (Model.IsGlobalAdmin)
+                                                            {
+                                                                <option value="Admin" selected="@(user.Role == "Admin")">مدير عام</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    @if (Model.IsGlobalAdmin)
+                                                    {
+                                                        <div class="mb-3">
+                                                            <label class="form-label">المؤسسة</label>
+                                                            <select name="tenantId" class="form-select">
+                                                                <option value="">-- بدون مؤسسة (مدير عام) --</option>
+                                                                @foreach (var tenant in Model.Tenants)
+                                                                {
+                                                                    <option value="@tenant.TenantId" selected="@(user.TenantId == tenant.TenantId)">@tenant.Name</option>
+                                                                }
+                                                            </select>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                                    <button type="submit" class="btn btn-primary">حفظ</button>
                                                 </div>
                                             </form>
                                         </div>
