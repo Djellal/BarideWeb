@@ -1,0 +1,74 @@
+@page
+@model BarideWeb.Pages.Account.ProfileModel
+@{
+    ViewData["Title"] = "الملف الشخصي";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        @if (!string.IsNullOrEmpty(Model.StatusMessage))
+        {
+            <div class="alert alert-info py-2">@Model.StatusMessage</div>
+        }
+
+        <!-- Profile info card -->
+        <div class="card mb-3">
+            <div class="card-header card-header-custom">
+                <h5 class="mb-0"><i class="bi bi-person-circle"></i> المعلومات الشخصية</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="UpdateProfile">
+                    <div class="mb-3">
+                        <label class="form-label">اسم المستخدم</label>
+                        <input type="text" class="form-control" value="@Model.UserName" disabled />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">الاسم الكامل</label>
+                        <input type="text" name="fullName" class="form-control" value="@Model.FullName" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">الدور</label>
+                        <input type="text" class="form-control" value="@(Model.Role switch
+                        {
+                            "Admin" => "مدير عام",
+                            "TenantAdmin" => "مدير مؤسسة",
+                            _ => "مستخدم"
+                        })" disabled />
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.TenantName))
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">المؤسسة</label>
+                            <input type="text" class="form-control" value="@Model.TenantName" disabled />
+                        </div>
+                    }
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> حفظ التغييرات
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Change password card -->
+        <div class="card">
+            <div class="card-header card-header-custom">
+                <h5 class="mb-0"><i class="bi bi-key"></i> تغيير كلمة المرور</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="ChangePassword">
+                    <div class="mb-3">
+                        <label class="form-label">كلمة المرور الحالية</label>
+                        <input type="password" name="currentPassword" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">كلمة المرور الجديدة</label>
+                        <input type="password" name="newPassword" class="form-control" required minlength="4" />
+                    </div>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-key"></i> تغيير كلمة المرور
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

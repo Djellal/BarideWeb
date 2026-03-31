@@ -101,13 +101,13 @@
                 @if (User.Identity?.IsAuthenticated == true)
                 {
                     <div class="d-flex align-items-center gap-2">
-                        <span class="text-light opacity-75">
+                        <a asp-page="/Account/Profile" class="text-light opacity-75 text-decoration-none">
                             <i class="bi bi-person-circle"></i> @User.Identity.Name
                             @if (User.FindFirst("TenantId") != null)
                             {
                                 <small class="badge bg-light text-dark ms-1">@(User.FindFirst("TenantName")?.Value ?? "")</small>
                             }
-                        </span>
+                        </a>
                         <form method="post" asp-page="/Account/Logout">
                             <button type="submit" class="btn btn-outline-light btn-sm rounded-pill">
                                 <i class="bi bi-box-arrow-right"></i> خروج
