@@ -6,17 +6,14 @@
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <div class="card">
+        <div class="card" data-aos="fade-up">
             <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="bi bi-tags"></i> إدارة الأصناف</h5>
             </div>
             <div class="card-body">
                 @if (!string.IsNullOrEmpty(Model.Message))
                 {
-                    <div class="alert alert-success alert-dismissible fade show">
-                        @Model.Message
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+                    <script>document.addEventListener('DOMContentLoaded', function() { notyf.success('@Model.Message'); });</script>
                 }
 
                 <!-- Add new category -->
@@ -54,7 +51,7 @@
                                     </form>
                                 </td>
                                 <td>
-                                    <form method="post" asp-page-handler="Delete" onsubmit="return confirm('هل تريد فعلا حذف التصنيف: @cat.Designation ؟')">
+                                    <form method="post" asp-page-handler="Delete" onsubmit="event.preventDefault(); swalConfirm('هل تريد فعلا حذف التصنيف: @cat.Designation ؟', this);">
                                         <input type="hidden" name="catId" value="@cat.CatId" />
                                         <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> حذف</button>
                                     </form>

@@ -4,93 +4,93 @@
     ViewData["Title"] = "الإحصائيات";
 }
 
-<div class="card mb-4">
+<div class="card mb-4" data-aos="fade-up">
     <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="bi bi-graph-up"></i> الإحصائيات</h5>
     </div>
-    <div class="card-body">
+    <div class="card-body py-2 px-3">
         <!-- Summary Cards -->
-        <div class="row g-3 mb-4">
+        <div class="row g-2 mb-2">
             <div class="col-md-3 col-6">
                 <div class="card h-100">
-                    <div class="card-body text-center">
-                        <div class="mb-2"><i class="bi bi-envelope-fill text-primary" style="font-size: 2rem;"></i></div>
-                        <h3 class="fw-bold mb-0">@Model.TotalCorrespondances</h3>
-                        <small class="text-muted">إجمالي المراسلات</small>
+                    <div class="card-body text-center py-2 px-2">
+                        <div class="mb-1"><i class="bi bi-envelope-fill text-primary" style="font-size: 1.4rem;"></i></div>
+                        <h5 class="fw-bold mb-0 countup" data-count="@Model.TotalCorrespondances">0</h5>
+                        <small class="text-muted" style="font-size:0.78rem;">إجمالي المراسلات</small>
                     </div>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="card h-100">
-                    <div class="card-body text-center">
-                        <div class="mb-2"><i class="bi bi-file-earmark-fill text-success" style="font-size: 2rem;"></i></div>
-                        <h3 class="fw-bold mb-0">@Model.TotalDocuments</h3>
-                        <small class="text-muted">إجمالي الوثائق</small>
+                    <div class="card-body text-center py-2 px-2">
+                        <div class="mb-1"><i class="bi bi-file-earmark-fill text-success" style="font-size: 1.4rem;"></i></div>
+                        <h5 class="fw-bold mb-0 countup" data-count="@Model.TotalDocuments">0</h5>
+                        <small class="text-muted" style="font-size:0.78rem;">إجمالي الوثائق</small>
                     </div>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="card h-100">
-                    <div class="card-body text-center">
-                        <div class="mb-2"><i class="bi bi-tags-fill text-warning" style="font-size: 2rem;"></i></div>
-                        <h3 class="fw-bold mb-0">@Model.TotalCategories</h3>
-                        <small class="text-muted">الأصناف</small>
+                    <div class="card-body text-center py-2 px-2">
+                        <div class="mb-1"><i class="bi bi-tags-fill text-warning" style="font-size: 1.4rem;"></i></div>
+                        <h5 class="fw-bold mb-0 countup" data-count="@Model.TotalCategories">0</h5>
+                        <small class="text-muted" style="font-size:0.78rem;">الأصناف</small>
                     </div>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="card h-100">
-                    <div class="card-body text-center">
-                        <div class="mb-2"><i class="bi bi-folder-fill text-info" style="font-size: 2rem;"></i></div>
-                        <h3 class="fw-bold mb-0">@Model.TotalDivers</h3>
-                        <small class="text-muted">متفرقات</small>
+                    <div class="card-body text-center py-2 px-2">
+                        <div class="mb-1"><i class="bi bi-folder-fill text-info" style="font-size: 1.4rem;"></i></div>
+                        <h5 class="fw-bold mb-0 countup" data-count="@Model.TotalDivers">0</h5>
+                        <small class="text-muted" style="font-size:0.78rem;">متفرقات</small>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Type Breakdown -->
-        <div class="row g-3 mb-4">
+        <div class="row g-2 mb-2">
             <div class="col-md-3 col-6">
                 <div class="card h-100" style="border-right: 4px solid var(--primary) !important;">
-                    <div class="card-body d-flex align-items-center gap-3">
-                        <i class="bi bi-box-arrow-in-down-left text-primary" style="font-size: 1.5rem;"></i>
+                    <div class="card-body d-flex align-items-center gap-2 py-2 px-3">
+                        <i class="bi bi-box-arrow-in-down-left text-primary" style="font-size: 1.2rem;"></i>
                         <div>
-                            <h5 class="fw-bold mb-0">@Model.TotalEntrantInterne</h5>
-                            <small class="text-muted">وارد داخلي</small>
+                            <h6 class="fw-bold mb-0 countup" data-count="@Model.TotalEntrantInterne">0</h6>
+                            <small class="text-muted" style="font-size:0.78rem;">وارد داخلي</small>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="card h-100" style="border-right: 4px solid var(--bs-info) !important;">
-                    <div class="card-body d-flex align-items-center gap-3">
-                        <i class="bi bi-box-arrow-in-down-right text-info" style="font-size: 1.5rem;"></i>
+                    <div class="card-body d-flex align-items-center gap-2 py-2 px-3">
+                        <i class="bi bi-box-arrow-in-down-right text-info" style="font-size: 1.2rem;"></i>
                         <div>
-                            <h5 class="fw-bold mb-0">@Model.TotalEntrantExterne</h5>
-                            <small class="text-muted">وارد خارجي</small>
+                            <h6 class="fw-bold mb-0 countup" data-count="@Model.TotalEntrantExterne">0</h6>
+                            <small class="text-muted" style="font-size:0.78rem;">وارد خارجي</small>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="card h-100" style="border-right: 4px solid var(--accent) !important;">
-                    <div class="card-body d-flex align-items-center gap-3">
-                        <i class="bi bi-box-arrow-up-right text-success" style="font-size: 1.5rem;"></i>
+                    <div class="card-body d-flex align-items-center gap-2 py-2 px-3">
+                        <i class="bi bi-box-arrow-up-right text-success" style="font-size: 1.2rem;"></i>
                         <div>
-                            <h5 class="fw-bold mb-0">@Model.TotalSortantInterne</h5>
-                            <small class="text-muted">صادر داخلي</small>
+                            <h6 class="fw-bold mb-0 countup" data-count="@Model.TotalSortantInterne">0</h6>
+                            <small class="text-muted" style="font-size:0.78rem;">صادر داخلي</small>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="card h-100" style="border-right: 4px solid var(--bs-warning) !important;">
-                    <div class="card-body d-flex align-items-center gap-3">
-                        <i class="bi bi-box-arrow-up-left text-warning" style="font-size: 1.5rem;"></i>
+                    <div class="card-body d-flex align-items-center gap-2 py-2 px-3">
+                        <i class="bi bi-box-arrow-up-left text-warning" style="font-size: 1.2rem;"></i>
                         <div>
-                            <h5 class="fw-bold mb-0">@Model.TotalSortantExterne</h5>
-                            <small class="text-muted">صادر خارجي</small>
+                            <h6 class="fw-bold mb-0 countup" data-count="@Model.TotalSortantExterne">0</h6>
+                            <small class="text-muted" style="font-size:0.78rem;">صادر خارجي</small>
                         </div>
                     </div>
                 </div>
@@ -100,30 +100,30 @@
 </div>
 
 <!-- Monthly Chart + Top Categories -->
-<div class="row g-3 mb-4">
+<div class="row g-2 mb-3" data-aos="fade-up" data-aos-delay="100">
     <!-- Monthly Chart -->
     <div class="col-lg-8">
         <div class="card h-100">
-            <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+            <div class="card-header card-header-custom d-flex justify-content-between align-items-center py-2">
                 <h6 class="mb-0"><i class="bi bi-bar-chart-fill"></i> المراسلات الشهرية - @Model.CurrentYear</h6>
                 <div class="d-flex gap-1">
-                    <a class="btn btn-sm btn-outline-light" asp-page="/Statistics/Index" asp-route-year="@(Model.CurrentYear - 1)">
+                    <a class="btn btn-sm btn-outline-light py-0 px-1" asp-page="/Statistics/Index" asp-route-year="@(Model.CurrentYear - 1)">
                         <i class="bi bi-chevron-right"></i>
                     </a>
-                    <a class="btn btn-sm btn-outline-light" asp-page="/Statistics/Index" asp-route-year="@(Model.CurrentYear + 1)">
+                    <a class="btn btn-sm btn-outline-light py-0 px-1" asp-page="/Statistics/Index" asp-route-year="@(Model.CurrentYear + 1)">
                         <i class="bi bi-chevron-left"></i>
                     </a>
                 </div>
             </div>
-            <div class="card-body">
-                <canvas id="monthlyChart" height="250"></canvas>
+            <div class="card-body py-2">
+                <div id="monthlyChart"></div>
             </div>
         </div>
     </div>
     <!-- Top Categories -->
     <div class="col-lg-4">
         <div class="card h-100">
-            <div class="card-header card-header-custom">
+            <div class="card-header card-header-custom py-2">
                 <h6 class="mb-0"><i class="bi bi-pie-chart-fill"></i> أعلى الأصناف</h6>
             </div>
             <div class="card-body p-0">
@@ -134,12 +134,12 @@
                         @foreach (var cat in Model.TopCategories)
                         {
                             var pct = maxCount > 0 ? (int)(cat.Count * 100.0 / maxCount) : 0;
-                            <div class="list-group-item px-3 py-2">
+                            <div class="list-group-item px-3 py-1">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="fw-semibold" style="font-size: 0.85rem;">@cat.Name</span>
-                                    <span class="badge bg-primary rounded-pill">@cat.Count</span>
+                                    <span class="fw-semibold" style="font-size: 0.82rem;">@cat.Name</span>
+                                    <span class="badge bg-primary rounded-pill" style="font-size:0.72rem;">@cat.Count</span>
                                 </div>
-                                <div class="progress" style="height: 5px;">
+                                <div class="progress" style="height: 4px;">
                                     <div class="progress-bar" style="width: @(pct)%;"></div>
                                 </div>
                             </div>
@@ -148,7 +148,7 @@
                 }
                 else
                 {
-                    <div class="text-center text-muted p-4">لا توجد بيانات</div>
+                    <div class="text-center text-muted p-3" style="font-size:0.85rem;">لا توجد بيانات</div>
                 }
             </div>
         </div>
@@ -156,21 +156,21 @@
 </div>
 
 <!-- Top Expediteurs + Type Distribution -->
-<div class="row g-3 mb-4">
+<div class="row g-2 mb-3" data-aos="fade-up" data-aos-delay="200">
     <div class="col-lg-6">
         <div class="card h-100">
-            <div class="card-header card-header-custom">
+            <div class="card-header card-header-custom py-2">
                 <h6 class="mb-0"><i class="bi bi-people-fill"></i> أكثر المراسلين</h6>
             </div>
             <div class="card-body p-0">
                 @if (Model.TopExpediteurs.Any())
                 {
-                    <table class="table table-striped table-hover mb-0">
+                    <table class="table table-striped table-hover mb-0" style="font-size:0.85rem;">
                         <thead>
                             <tr>
-                                <th style="width: 50px;">#</th>
-                                <th>المرسل / المرسل إليه</th>
-                                <th style="width: 100px;">العدد</th>
+                                <th style="width: 40px; padding:0.4rem 0.5rem;">#</th>
+                                <th style="padding:0.4rem 0.5rem;">المرسل / المرسل إليه</th>
+                                <th style="width: 80px; padding:0.4rem 0.5rem;">العدد</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -178,9 +178,9 @@
                             @foreach (var exp in Model.TopExpediteurs)
                             {
                                 <tr>
-                                    <td class="text-muted">@rank</td>
-                                    <td>@exp.Name</td>
-                                    <td><span class="badge bg-primary">@exp.Count</span></td>
+                                    <td class="text-muted" style="padding:0.35rem 0.5rem;">@rank</td>
+                                    <td style="padding:0.35rem 0.5rem;">@exp.Name</td>
+                                    <td style="padding:0.35rem 0.5rem;"><span class="badge bg-primary" style="font-size:0.72rem;">@exp.Count</span></td>
                                 </tr>
                                 rank++;
                             }
@@ -189,77 +189,69 @@
                 }
                 else
                 {
-                    <div class="text-center text-muted p-4">لا توجد بيانات</div>
+                    <div class="text-center text-muted p-3" style="font-size:0.85rem;">لا توجد بيانات</div>
                 }
             </div>
         </div>
     </div>
     <div class="col-lg-6">
         <div class="card h-100">
-            <div class="card-header card-header-custom">
+            <div class="card-header card-header-custom py-2">
                 <h6 class="mb-0"><i class="bi bi-pie-chart-fill"></i> توزيع الأنواع</h6>
             </div>
-            <div class="card-body">
-                <canvas id="typeChart" height="250"></canvas>
+            <div class="card-body py-2">
+                <div id="typeChart"></div>
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
     <script>
+        // CountUp animation
+        document.querySelectorAll('.countup').forEach(function(el) {
+            var target = parseInt(el.getAttribute('data-count')) || 0;
+            if (typeof countUp !== 'undefined' && countUp.CountUp) {
+                var cu = new countUp.CountUp(el, target, { duration: 1.5, useGrouping: true });
+                cu.start();
+            } else {
+                el.textContent = target;
+            }
+        });
+
         var months = ['جانفي', 'فيفري', 'مارس', 'أفريل', 'ماي', 'جوان', 'جويلية', 'أوت', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-        var entrantData = [@string.Join(",", Model.MonthlyEntrant)];
-        var sortantData = [@string.Join(",", Model.MonthlySortant)];
 
-        new Chart(document.getElementById('monthlyChart'), {
-            type: 'bar',
-            data: {
-                labels: months,
-                datasets: [
-                    {
-                        label: 'الوارد',
-                        data: entrantData,
-                        backgroundColor: 'rgba(26, 122, 76, 0.7)',
-                        borderColor: '#1a7a4c',
-                        borderWidth: 1,
-                        borderRadius: 4
-                    },
-                    {
-                        label: 'الصادر',
-                        data: sortantData,
-                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
-                        borderColor: '#10b981',
-                        borderWidth: 1,
-                        borderRadius: 4
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'top' } },
-                scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
-                }
-            }
-        });
+        // Monthly bar chart
+        new ApexCharts(document.getElementById('monthlyChart'), {
+            chart: { type: 'bar', height: 180, fontFamily: 'Cairo, sans-serif', toolbar: { show: false },
+                animations: { enabled: true, easing: 'easeinout', speed: 800 } },
+            series: [
+                { name: 'الوارد', data: [@string.Join(",", Model.MonthlyEntrant)] },
+                { name: 'الصادر', data: [@string.Join(",", Model.MonthlySortant)] }
+            ],
+            xaxis: { categories: months },
+            yaxis: { forceNiceScale: true },
+            colors: ['#1a7a4c', '#10b981'],
+            plotOptions: { bar: { borderRadius: 4, columnWidth: '60%' } },
+            dataLabels: { enabled: false },
+            legend: { position: 'top' },
+            grid: { borderColor: '#e5e7eb' },
+            tooltip: { theme: 'light' }
+        }).render();
 
-        new Chart(document.getElementById('typeChart'), {
-            type: 'doughnut',
-            data: {
-                labels: ['وارد داخلي', 'وارد خارجي', 'صادر داخلي', 'صادر خارجي', 'متفرقات'],
-                datasets: [{
-                    data: [@Model.TotalEntrantInterne, @Model.TotalEntrantExterne, @Model.TotalSortantInterne, @Model.TotalSortantExterne, @Model.TotalDivers],
-                    backgroundColor: ['#1a7a4c', '#2ecc71', '#10b981', '#f59e0b', '#8b5cf6'],
-                    borderWidth: 2,
-                    borderColor: '#fff'
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
+        // Type doughnut chart
+        new ApexCharts(document.getElementById('typeChart'), {
+            chart: { type: 'donut', height: 200, fontFamily: 'Cairo, sans-serif',
+                animations: { enabled: true, easing: 'easeinout', speed: 1000, animateGradually: { enabled: true, delay: 150 } } },
+            series: [@Model.TotalEntrantInterne, @Model.TotalEntrantExterne, @Model.TotalSortantInterne, @Model.TotalSortantExterne, @Model.TotalDivers],
+            labels: ['وارد داخلي', 'وارد خارجي', 'صادر داخلي', 'صادر خارجي', 'متفرقات'],
+            colors: ['#1a7a4c', '#2ecc71', '#10b981', '#f59e0b', '#8b5cf6'],
+            legend: { position: 'bottom', fontSize: '12px' },
+            dataLabels: { enabled: false },
+            plotOptions: { pie: { donut: { size: '60%' } } },
+            stroke: { width: 2, colors: ['#fff'] },
+            tooltip: { theme: 'light' }
+        }).render();
     </script>
 }

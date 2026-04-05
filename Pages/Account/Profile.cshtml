@@ -8,7 +8,7 @@
     <div class="col-lg-6">
         @if (!string.IsNullOrEmpty(Model.StatusMessage))
         {
-            <div class="alert alert-info py-2">@Model.StatusMessage</div>
+            <script>document.addEventListener('DOMContentLoaded', function() { notyf.success('@Model.StatusMessage'); });</script>
         }
 
         <!-- Profile info card -->

@@ -40,7 +40,9 @@ body {
 
 /* ===== NAVBAR ===== */
 .navbar {
-    background: linear-gradient(135deg, #1a7a4c 0%, #15643e 100%);
+    background: linear-gradient(135deg, rgba(26,122,76,0.92) 0%, rgba(21,100,62,0.95) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     padding: 0.6rem 1rem;
     border: none;
 }
@@ -92,6 +94,7 @@ body {
 
 .card:hover {
     box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
 }
 
 .card-header-custom {
@@ -463,4 +466,47 @@ footer {
 /* AG Grid: highlight unviewed rows */
 .ag-row-warning {
     background-color: #d1fae5 !important;
+}
+
+/* ===== PROGRESS BAR ANIMATION ===== */
+@keyframes progressGrow {
+    from { width: 0; }
+}
+
+.progress-bar {
+    animation: progressGrow 1s ease-out;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+}
+
+/* ===== SKELETON LOADER ===== */
+@keyframes shimmer {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 4px;
+}
+
+.skeleton-row {
+    height: 40px;
+    margin-bottom: 8px;
+}
+
+/* ===== MODAL ANIMATION ===== */
+.modal.fade .modal-dialog {
+    transform: scale(0.9) translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1) translateY(0);
+}
+
+/* ===== COUNTUP TARGET ===== */
+.countup {
+    display: inline-block;
 }

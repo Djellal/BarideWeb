@@ -5,14 +5,14 @@
     ViewData["Title"] = Model.IsAdmin ? "إعدادات المؤسسات" : "الإعدادات";
 }
 
-<div class="card">
+<div class="card" data-aos="fade-up">
     <div class="card-header card-header-custom">
         <h5 class="mb-0"><i class="bi bi-gear-fill"></i> @(Model.IsAdmin ? "إعدادات المؤسسات" : "الإعدادات")</h5>
     </div>
     <div class="card-body">
         @if (!string.IsNullOrEmpty(Model.StatusMessage))
         {
-            <div class="alert alert-info py-2">@Model.StatusMessage</div>
+            <script>document.addEventListener('DOMContentLoaded', function() { notyf.success('@Model.StatusMessage'); });</script>
         }
 
         <div class="accordion" id="tenantAccordion">
@@ -216,12 +216,18 @@
                                     iframe.srcdoc = html;
                                 }
                                 function resetTemplate_@(tenantIdStr)() {
-                                    if (!confirm('هل تريد استعادة القالب الافتراضي؟ سيتم فقد التعديلات الحالية.')) return;
-                                    fetch('?handler=DefaultEmailTemplate')
-                                        .then(r => r.text())
-                                        .then(html => {
-                                            document.getElementById('emailTemplateEditor-@tenantIdStr').value = html;
-                                        });
+                                    Swal.fire({
+                                        text: 'هل تريد استعادة القالب الافتراضي؟ سيتم فقد التعديلات الحالية.',
+                                        icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545',
+                                        cancelButtonColor: '#6c757d', confirmButtonText: 'نعم', cancelButtonText: 'إلغاء', reverseButtons: true
+                                    }).then(function(result) {
+                                        if (!result.isConfirmed) return;
+                                        fetch('?handler=DefaultEmailTemplate')
+                                            .then(r => r.text())
+                                            .then(html => {
+                                                document.getElementById('emailTemplateEditor-@tenantIdStr').value = html;
+                                            });
+                                    });
                                 }
                             </script>
                         </div>

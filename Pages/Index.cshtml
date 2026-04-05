@@ -5,7 +5,7 @@
     ViewData["Title"] = "الرئيسية";
 }
 
-<div class="card">
+<div class="card" data-aos="fade-up">
     <div class="card-header card-header-custom d-flex justify-content-between align-items-center flex-wrap">
         <div class="d-flex gap-2 flex-wrap align-items-center">
             @if (User.IsInRole("Admin") || User.IsInRole("TenantAdmin"))

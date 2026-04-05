@@ -103,7 +103,7 @@
                                             <td>
                                                 <button type="submit" asp-page-handler="DeleteDoc" name="docId" value="@doc.DocId"
                                                         class="btn btn-sm btn-outline-danger"
-                                                        onclick="return confirm('هل تريد فعلا حذف هذه الوثيقة ؟')">
+                                                        onclick="event.preventDefault(); var btn=this; swalConfirm('هل تريد فعلا حذف هذه الوثيقة ؟', function(){ btn.removeAttribute('onclick'); btn.click(); });">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </td>
