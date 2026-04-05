@@ -16,13 +16,15 @@ namespace BarideWeb.Pages
         private readonly IWebHostEnvironment _env;
         private readonly UserManager<AppUser> _userManager;
         private readonly IEmailService _emailService;
+        private readonly IEmailTemplateService _emailTemplateService;
 
-        public IndexModel(BarideDbContext context, IWebHostEnvironment env, UserManager<AppUser> userManager, IEmailService emailService)
+        public IndexModel(BarideDbContext context, IWebHostEnvironment env, UserManager<AppUser> userManager, IEmailService emailService, IEmailTemplateService emailTemplateService)
         {
             _context = context;
             _env = env;
             _userManager = userManager;
             _emailService = emailService;
+            _emailTemplateService = emailTemplateService;
         }
 
         public List<Corresp> Correspondances { get; set; } = new();
@@ -171,15 +173,9 @@ namespace BarideWeb.Pages
             if (contacts == null || contacts.Count == 0)
                 return RedirectToPage("/Index", new { type = (int)(corresp.Type ?? TypeCorresp.Entrant_Interne) });
 
-            var viewUrl = $"{Request.Scheme}://{Request.Host}/Correspondances/View/{cid}";
+            var viewUrl = $"{Request.Scheme}://{Request.Host}/Correspondances/SharedView/{cid}";
             var subject = $"مراسلة رقم {corresp.Num} - {corresp.Objet}";
-            var body = $@"
-                <div dir='rtl' style='font-family: Cairo, sans-serif;'>
-                    <h3>مراسلة رقم {corresp.Num}</h3>
-                    <p><strong>الموضوع:</strong> {corresp.Objet}</p>
-                    <p><strong>المرسل:</strong> {corresp.Expediteur}</p>
-                    <p><a href='{viewUrl}'>اضغط هنا لعرض المراسلة</a></p>
-                </div>";
+            var body = await _emailTemplateService.BuildShareEmailAsync(corresp, viewUrl);
 
             foreach (var dto in contacts)
             {

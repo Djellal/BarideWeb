@@ -33,6 +33,7 @@
 
                                 @foreach (var p in tp.Parameters)
                                 {
+                                    @if (p.Key == "EmailTemplate") { continue; }
                                     <div class="row mb-3 align-items-center">
                                         @if (p.Key == "CorrespViewMode")
                                         {
@@ -127,6 +128,102 @@
                                     </button>
                                 </div>
                             </form>
+
+                            @{
+                                var emailParam = tp.Parameters.FirstOrDefault(p => p.Key == "EmailTemplate");
+                                var templateContent = emailParam?.LongValue ?? "";
+                                var tenantIdStr = tp.TenantId.ToString("N");
+                            }
+                            <hr class="my-4" />
+                            <div class="mb-3">
+                                <h6 class="fw-bold"><i class="bi bi-envelope-paper"></i> قالب البريد الإلكتروني</h6>
+                                <p class="text-muted small">
+                                    يمكنك تعديل قالب البريد الإلكتروني المرسل عند مشاركة المراسلات. استخدم المتغيرات التالية:
+                                </p>
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    <span class="badge bg-primary">@("{{Num}}")</span>
+                                    <span class="badge bg-primary">@("{{NumInterne}}")</span>
+                                    <span class="badge bg-primary">@("{{Objet}}")</span>
+                                    <span class="badge bg-primary">@("{{Expediteur}}")</span>
+                                    <span class="badge bg-primary">@("{{DateCorresp}}")</span>
+                                    <span class="badge bg-primary">@("{{DateArrivDepart}}")</span>
+                                    <span class="badge bg-primary">@("{{Observation}}")</span>
+                                    <span class="badge bg-secondary">@("{{TypeLabel}}")</span>
+                                    <span class="badge bg-secondary">@("{{ExpedLabel}}")</span>
+                                    <span class="badge bg-secondary">@("{{ObservationRow}}")</span>
+                                    <span class="badge bg-secondary">@("{{NumInterneRow}}")</span>
+                                    <span class="badge bg-success">@("{{ViewUrl}}")</span>
+                                </div>
+                            </div>
+
+                            <form method="post" asp-page-handler="SaveEmailTemplate">
+                                <input type="hidden" name="tenantId" value="@tp.TenantId" />
+
+                                <ul class="nav nav-tabs mb-0" role="tablist">
+                                    <li class="nav-item">
+                                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#editor-@tenantIdStr" type="button">
+                                            <i class="bi bi-code-slash"></i> تحرير القالب
+                                        </button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#preview-@tenantIdStr" type="button"
+                                                onclick="updatePreview_@(tenantIdStr)()">
+                                            <i class="bi bi-eye"></i> معاينة
+                                        </button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content border border-top-0 rounded-bottom">
+                                    <div class="tab-pane fade show active p-0" id="editor-@tenantIdStr">
+                                        <textarea name="emailTemplate" id="emailTemplateEditor-@tenantIdStr"
+                                                  class="form-control font-monospace border-0 rounded-0"
+                                                  style="min-height:400px;font-size:13px;resize:vertical;direction:ltr;text-align:left;"
+                                                  >@templateContent</textarea>
+                                    </div>
+                                    <div class="tab-pane fade" id="preview-@tenantIdStr">
+                                        <iframe id="emailPreview-@tenantIdStr" style="width:100%;min-height:500px;border:none;background:#eef2f7;"></iframe>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between mt-3">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            onclick="resetTemplate_@(tenantIdStr)()">
+                                        <i class="bi bi-arrow-counterclockwise"></i> استعادة القالب الافتراضي
+                                    </button>
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-check-circle"></i> حفظ قالب البريد
+                                    </button>
+                                </div>
+                            </form>
+
+                            <script>
+                                function updatePreview_@(tenantIdStr)() {
+                                    var html = document.getElementById('emailTemplateEditor-@tenantIdStr').value;
+                                    // Replace placeholders with sample data for preview
+                                    html = html.replace(/\{\{Num\}\}/g, '2025/123')
+                                        .replace(/\{\{NumInterne\}\}/g, 'INT-456')
+                                        .replace(/\{\{Objet\}\}/g, 'موضوع تجريبي للمعاينة')
+                                        .replace(/\{\{Expediteur\}\}/g, 'المديرية الفرعية')
+                                        .replace(/\{\{DateCorresp\}\}/g, '2025/03/15')
+                                        .replace(/\{\{DateArrivDepart\}\}/g, '2025/03/16')
+                                        .replace(/\{\{Observation\}\}/g, 'ملاحظة تجريبية')
+                                        .replace(/\{\{TypeLabel\}\}/g, 'وارد داخلي')
+                                        .replace(/\{\{ExpedLabel\}\}/g, 'المرسل')
+                                        .replace(/\{\{ViewUrl\}\}/g, '#')
+                                        .replace(/\{\{NumInterneRow\}\}/g, "<p style='margin:6px 0 0;font-size:13px;color:#94a3b8;'>الرقم الداخلي: INT-456</p>")
+                                        .replace(/\{\{ObservationRow\}\}/g, "<tr><td style='padding:14px 20px;font-size:14px;color:#6b7280;border-bottom:1px solid #f0f0f0;width:130px;font-weight:600;'>ملاحظة</td><td style='padding:14px 20px;font-size:14px;color:#374151;border-bottom:1px solid #f0f0f0;'>ملاحظة تجريبية</td></tr>");
+                                    var iframe = document.getElementById('emailPreview-@tenantIdStr');
+                                    iframe.srcdoc = html;
+                                }
+                                function resetTemplate_@(tenantIdStr)() {
+                                    if (!confirm('هل تريد استعادة القالب الافتراضي؟ سيتم فقد التعديلات الحالية.')) return;
+                                    fetch('?handler=DefaultEmailTemplate')
+                                        .then(r => r.text())
+                                        .then(html => {
+                                            document.getElementById('emailTemplateEditor-@tenantIdStr').value = html;
+                                        });
+                                }
+                            </script>
                         </div>
                     </div>
                 </div>

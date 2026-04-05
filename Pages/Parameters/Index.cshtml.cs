@@ -13,11 +13,13 @@ namespace BarideWeb.Pages.Parameters
     {
         private readonly BarideDbContext _context;
         private readonly ITenantService _tenantService;
+        private readonly IEmailTemplateService _emailTemplateService;
 
-        public IndexModel(BarideDbContext context, ITenantService tenantService)
+        public IndexModel(BarideDbContext context, ITenantService tenantService, IEmailTemplateService emailTemplateService)
         {
             _context = context;
             _tenantService = tenantService;
+            _emailTemplateService = emailTemplateService;
         }
 
         public List<TenantParametersViewModel> TenantParams { get; set; } = new();
@@ -67,6 +69,50 @@ namespace BarideWeb.Pages.Parameters
             return RedirectToPage(new { message = $"تم حفظ إعدادات المؤسسة: {tenant.Name}" });
         }
 
+        public async Task<IActionResult> OnPostSaveEmailTemplateAsync(Guid tenantId, string emailTemplate)
+        {
+            if (!IsAdmin)
+            {
+                var currentTenantId = _tenantService.GetCurrentTenantId();
+                if (currentTenantId == null || currentTenantId != tenantId)
+                    return Forbid();
+            }
+
+            var tenant = await _context.Tenants.FindAsync(tenantId);
+            if (tenant == null) return RedirectToPage();
+
+            var existing = await _context.Parameters.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(p => p.TenantId == tenantId && p.Key == "EmailTemplate");
+
+            if (existing != null)
+            {
+                existing.LongValue = emailTemplate;
+            }
+            else
+            {
+                _context.Parameters.Add(new AppParameter
+                {
+                    Key = "EmailTemplate",
+                    Value = "custom",
+                    LongValue = emailTemplate,
+                    Description = "قالب البريد الإلكتروني لمشاركة المراسلات",
+                    TenantId = tenantId
+                });
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToPage(new { message = $"تم حفظ قالب البريد الإلكتروني: {tenant.Name}" });
+        }
+
+        public IActionResult OnGetDefaultEmailTemplate()
+        {
+            return new ContentResult
+            {
+                Content = _emailTemplateService.GetDefaultTemplate(),
+                ContentType = "text/html"
+            };
+        }
+
         private async Task LoadAsync()
         {
             List<Tenant> tenants;
@@ -98,6 +144,7 @@ namespace BarideWeb.Pages.Parameters
                     ["ScannerDpi"] = ("200", "الدقة الافتراضية للماسح الضوئي (DPI): 100, 150, 200, 300, 600"),
                     ["ScannerPixelMode"] = ("Grayscale", "وضع اللون الافتراضي للماسح الضوئي: Color, Grayscale"),
                     ["ScannerImageFormat"] = ("PDF", "صيغة الصورة الافتراضية للماسح الضوئي: JPG, PNG, PDF"),
+                    ["EmailTemplate"] = ("default", "قالب البريد الإلكتروني لمشاركة المراسلات"),
                 };
 
                 bool added = false;

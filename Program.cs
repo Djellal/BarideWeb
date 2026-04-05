@@ -41,6 +41,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddTransient<IEmailService, EmailService>();
+builder.Services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 
 // Add TenantId claim to the user principal on sign-in
 builder.Services.AddScoped<IUserClaimsPrincipalFactory<AppUser>, TenantClaimsPrincipalFactory>();

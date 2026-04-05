@@ -22,6 +22,9 @@ namespace BarideWeb.Models
         [Display(Name = "القيمة")]
         public string Value { get; set; } = "";
 
+        [Display(Name = "القيمة الطويلة")]
+        public string? LongValue { get; set; }
+
         [MaxLength(300)]
         [Display(Name = "الوصف")]
         public string? Description { get; set; }
