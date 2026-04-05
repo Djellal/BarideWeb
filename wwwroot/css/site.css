@@ -1,8 +1,8 @@
 /* ===== BASE & TYPOGRAPHY ===== */
 :root {
-    --primary: #0e8ac4;
-    --primary-dark: #0a6d9e;
-    --primary-light: #e8f4fa;
+    --primary: #1a7a4c;
+    --primary-dark: #15643e;
+    --primary-light: #e6f5ee;
     --accent: #10b981;
     --accent-dark: #059669;
     --surface: #f8fafc;
@@ -40,7 +40,7 @@ body {
 
 /* ===== NAVBAR ===== */
 .navbar {
-    background: linear-gradient(135deg, #0e8ac4 0%, #0a6d9e 100%);
+    background: linear-gradient(135deg, #1a7a4c 0%, #15643e 100%);
     padding: 0.6rem 1rem;
     border: none;
 }
@@ -196,7 +196,7 @@ body {
 .btn-primary:hover {
     background-color: var(--primary-dark);
     border-color: var(--primary-dark);
-    box-shadow: 0 2px 8px rgba(14,138,196,0.3);
+    box-shadow: 0 2px 8px rgba(26,122,76,0.3);
 }
 
 .btn-success {
@@ -218,7 +218,7 @@ body {
 .btn-outline-primary:hover {
     background-color: var(--primary);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(14,138,196,0.2);
+    box-shadow: 0 2px 8px rgba(26,122,76,0.2);
 }
 
 .btn-outline-danger:hover {
@@ -240,7 +240,7 @@ body {
 
 .form-control:focus, .form-select:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(14,138,196,0.15);
+    box-shadow: 0 0 0 3px rgba(26,122,76,0.15);
 }
 
 .form-label {
@@ -381,7 +381,7 @@ footer {
 
 /* ===== FOCUS OVERRIDES ===== */
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 3px rgba(14,138,196,0.2);
+    box-shadow: 0 0 0 3px rgba(26,122,76,0.2);
 }
 
 /* ===== FORM FLOATING ===== */
@@ -416,6 +416,48 @@ footer {
     .type-tabs .nav-item {
         flex-shrink: 0;
     }
+}
+
+/* ===== BOOTSTRAP PRIMARY OVERRIDES ===== */
+.bg-primary {
+    background-color: var(--primary) !important;
+}
+
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.border-primary {
+    border-color: var(--primary) !important;
+}
+
+.btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+}
+
+.btn-outline-primary {
+    color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+    color: #fff !important;
+}
+
+.badge.bg-primary {
+    background-color: var(--primary) !important;
+}
+
+.bg-primary.bg-opacity-10 {
+    background-color: rgba(26, 122, 76, 0.1) !important;
 }
 
 /* AG Grid: highlight unviewed rows */
