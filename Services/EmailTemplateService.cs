@@ -77,7 +77,7 @@ namespace BarideWeb.Services
 
         <!-- Header -->
         <tr>
-          <td style='background:linear-gradient(135deg,#0f4c81 0%,#1a73e8 50%,#4a90d9 100%);padding:36px 40px 32px;text-align:center;'>
+          <td style='background:linear-gradient(135deg,#0f5132 0%,#1a7a4c 50%,#34d399 100%);padding:36px 40px 32px;text-align:center;'>
             <table cellpadding='0' cellspacing='0' style='margin:0 auto;'>
               <tr>
                 <td style='font-size:36px;padding-left:12px;'>🏛️</td>
@@ -95,8 +95,8 @@ namespace BarideWeb.Services
           <td style='padding:28px 40px 0;text-align:center;'>
             <table cellpadding='0' cellspacing='0' style='margin:0 auto;'>
               <tr>
-                <td style='background-color:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:6px 20px;'>
-                  <span style='font-size:13px;color:#1d4ed8;font-weight:bold;'>{{TypeLabel}}</span>
+                <td style='background-color:#ecfdf5;border:1px solid #a7f3d0;border-radius:20px;padding:6px 20px;'>
+                  <span style='font-size:13px;color:#15643e;font-weight:bold;'>{{TypeLabel}}</span>
                 </td>
               </tr>
             </table>
@@ -152,7 +152,7 @@ namespace BarideWeb.Services
           <td style='padding:8px 40px 36px;text-align:center;'>
             <table cellpadding='0' cellspacing='0' style='margin:0 auto;'>
               <tr>
-                <td style='background:linear-gradient(135deg,#1a73e8,#1d4ed8);border-radius:10px;box-shadow:0 4px 14px rgba(26,115,232,0.35);'>
+                <td style='background:linear-gradient(135deg,#1a7a4c,#15643e);border-radius:10px;box-shadow:0 4px 14px rgba(26,122,76,0.35);'>
                   <a href='{{ViewUrl}}' style='display:inline-block;color:#ffffff;text-decoration:none;padding:14px 44px;font-size:16px;font-weight:bold;letter-spacing:0.5px;'>
                     عرض المراسلة ←
                   </a>

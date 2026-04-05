@@ -95,7 +95,7 @@ body {
 }
 
 .card-header-custom {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: #fff;
     padding: 0.85rem 1.25rem;
     border-bottom: none;
@@ -137,7 +137,7 @@ body {
 }
 
 .table-striped > tbody > tr:nth-of-type(odd) > td {
-    background-color: #f8fafc;
+    background-color: #f5faf7;
 }
 
 .table-hover > tbody > tr:hover > td {
@@ -270,12 +270,12 @@ body {
 
 /* ===== STATUS BAR ===== */
 .status-bar {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    background: linear-gradient(135deg, #0f5132 0%, #1a7a4c 100%);
     color: rgba(255,255,255,0.9);
     padding: 0.5rem 1.25rem;
     font-size: 0.82rem;
     font-weight: 500;
-    border-top: 1px solid rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255,255,255,0.15);
 }
 
 /* ===== FILTER PANEL ===== */
@@ -297,7 +297,7 @@ body {
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: #fff;
     border-radius: var(--radius) var(--radius) 0 0;
     padding: 0.85rem 1.25rem;
@@ -348,8 +348,8 @@ body {
 
 /* ===== FOOTER ===== */
 footer {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    color: rgba(255,255,255,0.7);
+    background: linear-gradient(135deg, #0f5132 0%, #1a7a4c 100%);
+    color: rgba(255,255,255,0.75);
     padding: 0.85rem 1.25rem;
     font-size: 0.82rem;
     margin-top: auto;
@@ -366,12 +366,12 @@ footer {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: #a7c4b5;
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: #6da88a;
 }
 
 /* ===== EMPTY STATE ===== */
@@ -462,5 +462,5 @@ footer {
 
 /* AG Grid: highlight unviewed rows */
 .ag-row-warning {
-    background-color: #fff3cd !important;
+    background-color: #d1fae5 !important;
 }
