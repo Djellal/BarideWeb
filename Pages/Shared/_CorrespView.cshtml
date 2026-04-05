@@ -139,7 +139,7 @@
             }
         </div>
 
-        @if (!Model.IsModal)
+        @if (!Model.IsModal && User.Identity?.IsAuthenticated == true)
         {
             <div class="mt-4">
                 <a class="btn btn-secondary" asp-page="/Index" asp-route-type="@((int)Model.Corresp.Type!)">
