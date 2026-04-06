@@ -46,53 +46,6 @@
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
-
-                                <!-- Edit modal -->
-                                <div class="modal fade" id="editModal-@tenant.TenantId" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <form method="post" asp-page-handler="Edit">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">تعديل المؤسسة</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <input type="hidden" name="tenantId" value="@tenant.TenantId" />
-                                                    <div class="mb-3">
-                                                        <label class="form-label">اسم المؤسسة</label>
-                                                        <input type="text" name="name" class="form-control" value="@tenant.Name" required />
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                                    <button type="submit" class="btn btn-primary">حفظ</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Delete modal -->
-                                <div class="modal fade" id="deleteModal-@tenant.TenantId" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">تأكيد الحذف</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                هل تريد حذف المؤسسة <strong>@tenant.Name</strong>؟
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لا</button>
-                                                <form method="post" asp-page-handler="Delete">
-                                                    <input type="hidden" name="tenantId" value="@tenant.TenantId" />
-                                                    <button type="submit" class="btn btn-danger">نعم، حذف</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </td>
                         </tr>
                     }
@@ -101,6 +54,57 @@
         </div>
     </div>
 </div>
+
+<!-- Modals outside the card to avoid transform containing block -->
+@foreach (var tenant in Model.Tenants)
+{
+    <!-- Edit modal -->
+    <div class="modal fade" id="editModal-@tenant.TenantId" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" asp-page-handler="Edit">
+                    <div class="modal-header">
+                        <h5 class="modal-title">تعديل المؤسسة</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="tenantId" value="@tenant.TenantId" />
+                        <div class="mb-3">
+                            <label class="form-label">اسم المؤسسة</label>
+                            <input type="text" name="name" class="form-control" value="@tenant.Name" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete modal -->
+    <div class="modal fade" id="deleteModal-@tenant.TenantId" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    هل تريد حذف المؤسسة <strong>@tenant.Name</strong>؟
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لا</button>
+                    <form method="post" asp-page-handler="Delete">
+                        <input type="hidden" name="tenantId" value="@tenant.TenantId" />
+                        <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 <!-- Add tenant modal -->
 <div class="modal fade" id="addTenantModal" tabindex="-1">

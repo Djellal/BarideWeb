@@ -120,28 +120,11 @@
         <!-- AG Grid -->
         <div id="correspGrid" class="ag-theme-alpine mt-2" style="width: 100%; height: 500px;"></div>
 
-        <!-- Delete confirmation modal (shared) -->
-        <div class="modal fade" id="deleteModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">تأكيد الحذف</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        هل تريد فعلا حذف هذه المراسلة ؟
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لا</button>
-                        <form method="post" asp-page-handler="Delete">
-                            <input type="hidden" name="id" id="deleteId" />
-                            <input type="hidden" name="type" value="@((int)Model.CurrentType)" />
-                            <button type="submit" class="btn btn-danger">نعم، حذف</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Hidden delete form -->
+        <form method="post" asp-page-handler="Delete" id="deleteForm" style="display:none;">
+            <input type="hidden" name="id" id="deleteId" />
+            <input type="hidden" name="type" value="@((int)Model.CurrentType)" />
+        </form>
     </div>
 
     <div class="status-bar">
@@ -264,9 +247,10 @@
         }
 
         function confirmDelete(cid) {
-            document.getElementById('deleteId').value = cid;
-            var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            modal.show();
+            swalConfirm('هل تريد فعلا حذف هذه المراسلة ؟', function() {
+                document.getElementById('deleteId').value = cid;
+                document.getElementById('deleteForm').submit();
+            });
         }
 
         var viewMode = @((int)Model.CorrespViewMode);
@@ -368,7 +352,7 @@
             maxBlocksInCache: 10,
             enableRtl: true,
             animateRows: true,
-            rowSelection: 'single',
+            rowSelection: { mode: 'singleRow', checkboxes: false },
             overlayNoRowsTemplate: '<div class="text-center text-muted py-5"><i class="bi bi-inbox" style="font-size: 2.5rem; opacity: 0.3;"></i><p class="mt-2 mb-0">لا توجد مراسلات</p></div>',
             onRowClicked: function (event) {
                 if (!event.data || event.event.target.closest('.btn-group')) return;
@@ -385,7 +369,7 @@
         };
 
         var gridDiv = document.getElementById('correspGrid');
-        new agGrid.Grid(gridDiv, gridOptions);
+        var gridApi = agGrid.createGrid(gridDiv, gridOptions);
 
         document.getElementById('transferModal').addEventListener('show.bs.modal', function (e) {
             var btn = e.relatedTarget;

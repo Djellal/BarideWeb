@@ -17,60 +17,59 @@
         <div id="transfertGrid" class="ag-theme-alpine" style="width: 100%; height: 500px;"></div>
     </div>
 
-    <!-- Edit modal (shared) -->
-    @if (User.IsInRole("Admin") || User.IsInRole("TenantAdmin"))
-    {
-        <div class="modal fade" id="editModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form method="post" asp-page-handler="Edit">
-                        <div class="modal-header">
-                            <h5 class="modal-title">تعديل الملاحظة</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <input type="hidden" name="id" id="editId" />
-                            <div class="mb-3">
-                                <label class="form-label">ملاحظة</label>
-                                <textarea name="note" id="editNote" class="form-control" rows="3"></textarea>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                            <button type="submit" class="btn btn-warning">حفظ</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Delete modal (shared) -->
-        <div class="modal fade" id="deleteModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">تأكيد الحذف</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        هل تريد حذف هذا التحويل؟
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لا</button>
-                        <form method="post" asp-page-handler="Delete">
-                            <input type="hidden" name="id" id="deleteId" />
-                            <button type="submit" class="btn btn-danger">نعم، حذف</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-
     <div class="status-bar">
         عدد التحويلات: @Model.Transferts.Count
     </div>
 </div>
+
+<!-- Modals outside the card to avoid transform containing block -->
+@if (User.IsInRole("Admin") || User.IsInRole("TenantAdmin"))
+{
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" asp-page-handler="Edit">
+                    <div class="modal-header">
+                        <h5 class="modal-title">تعديل الملاحظة</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="id" id="editId" />
+                        <div class="mb-3">
+                            <label class="form-label">ملاحظة</label>
+                            <textarea name="note" id="editNote" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-warning">حفظ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    هل تريد حذف هذا التحويل؟
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لا</button>
+                    <form method="post" asp-page-handler="Delete">
+                        <input type="hidden" name="id" id="deleteId" />
+                        <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @Html.AntiForgeryToken()
 
@@ -146,7 +145,7 @@
             },
             enableRtl: true,
             animateRows: true,
-            rowSelection: 'single',
+            rowSelection: { mode: 'singleRow', checkboxes: false },
             overlayNoRowsTemplate: '<div class="text-center text-muted py-5"><i class="bi bi-inbox" style="font-size: 2.5rem; opacity: 0.3;"></i><p class="mt-2 mb-0">لا توجد تحويلات</p></div>',
             getRowClass: function (params) {
                 return !params.data.isViewed ? 'ag-row-warning' : '';
@@ -158,11 +157,11 @@
         };
 
         var gridDiv = document.getElementById('transfertGrid');
-        var gridInstance = new agGrid.Grid(gridDiv, gridOptions);
+        var gridApi = agGrid.createGrid(gridDiv, gridOptions);
 
         // Search / Quick filter
         document.getElementById('searchInput').addEventListener('input', function () {
-            gridOptions.api.setQuickFilter(this.value);
+            gridApi.setGridOption('quickFilterText', this.value);
         });
 
         // Mark as viewed via hidden form post

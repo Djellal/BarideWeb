@@ -66,102 +66,6 @@
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                 </div>
-
-                                <!-- Delete modal -->
-                                <div class="modal fade" id="deleteModal-@user.Id" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">تأكيد الحذف</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                هل تريد حذف المستخدم <strong>@user.UserName</strong>؟
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لا</button>
-                                                <form method="post" asp-page-handler="Delete">
-                                                    <input type="hidden" name="userId" value="@user.Id" />
-                                                    <button type="submit" class="btn btn-danger">نعم، حذف</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Reset password modal -->
-                                <div class="modal fade" id="resetModal-@user.Id" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <form method="post" asp-page-handler="ResetPassword">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">إعادة تعيين كلمة المرور - @user.UserName</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <input type="hidden" name="userId" value="@user.Id" />
-                                                    <div class="mb-3">
-                                                        <label class="form-label">كلمة المرور الجديدة</label>
-                                                        <input type="password" name="newPassword" class="form-control" required minlength="4" />
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                                    <button type="submit" class="btn btn-warning">تغيير</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Edit user modal -->
-                                <div class="modal fade" id="editModal-@user.Id" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <form method="post" asp-page-handler="Edit">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">تعديل المستخدم - @user.UserName</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <input type="hidden" name="userId" value="@user.Id" />
-                                                    <div class="mb-3">
-                                                        <label class="form-label">الاسم الكامل</label>
-                                                        <input type="text" name="fullName" class="form-control" value="@user.FullName" required />
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label class="form-label">الدور</label>
-                                                        <select name="role" class="form-select">
-                                                            <option value="User" selected="@(user.Role == "User")">مستخدم</option>
-                                                            <option value="TenantAdmin" selected="@(user.Role == "TenantAdmin")">مدير مؤسسة</option>
-                                                            @if (Model.IsGlobalAdmin)
-                                                            {
-                                                                <option value="Admin" selected="@(user.Role == "Admin")">مدير عام</option>
-                                                            }
-                                                        </select>
-                                                    </div>
-                                                    @if (Model.IsGlobalAdmin)
-                                                    {
-                                                        <div class="mb-3">
-                                                            <label class="form-label">المؤسسة</label>
-                                                            <select name="tenantId" class="form-select">
-                                                                <option value="">-- بدون مؤسسة (مدير عام) --</option>
-                                                                @foreach (var tenant in Model.Tenants)
-                                                                {
-                                                                    <option value="@tenant.TenantId" selected="@(user.TenantId == tenant.TenantId)">@tenant.Name</option>
-                                                                }
-                                                            </select>
-                                                        </div>
-                                                    }
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                                                    <button type="submit" class="btn btn-primary">حفظ</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
                             </td>
                         </tr>
                     }
@@ -170,6 +74,106 @@
         </div>
     </div>
 </div>
+
+<!-- Modals outside the card to avoid transform containing block -->
+@foreach (var user in Model.Users)
+{
+    <!-- Delete modal -->
+    <div class="modal fade" id="deleteModal-@user.Id" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">تأكيد الحذف</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    هل تريد حذف المستخدم <strong>@user.UserName</strong>؟
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لا</button>
+                    <form method="post" asp-page-handler="Delete">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <button type="submit" class="btn btn-danger">نعم، حذف</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset password modal -->
+    <div class="modal fade" id="resetModal-@user.Id" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" asp-page-handler="ResetPassword">
+                    <div class="modal-header">
+                        <h5 class="modal-title">إعادة تعيين كلمة المرور - @user.UserName</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <div class="mb-3">
+                            <label class="form-label">كلمة المرور الجديدة</label>
+                            <input type="password" name="newPassword" class="form-control" required minlength="4" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-warning">تغيير</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit user modal -->
+    <div class="modal fade" id="editModal-@user.Id" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" asp-page-handler="Edit">
+                    <div class="modal-header">
+                        <h5 class="modal-title">تعديل المستخدم - @user.UserName</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <div class="mb-3">
+                            <label class="form-label">الاسم الكامل</label>
+                            <input type="text" name="fullName" class="form-control" value="@user.FullName" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">الدور</label>
+                            <select name="role" class="form-select">
+                                <option value="User" selected="@(user.Role == "User")">مستخدم</option>
+                                <option value="TenantAdmin" selected="@(user.Role == "TenantAdmin")">مدير مؤسسة</option>
+                                @if (Model.IsGlobalAdmin)
+                                {
+                                    <option value="Admin" selected="@(user.Role == "Admin")">مدير عام</option>
+                                }
+                            </select>
+                        </div>
+                        @if (Model.IsGlobalAdmin)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">المؤسسة</label>
+                                <select name="tenantId" class="form-select">
+                                    <option value="">-- بدون مؤسسة (مدير عام) --</option>
+                                    @foreach (var tenant in Model.Tenants)
+                                    {
+                                        <option value="@tenant.TenantId" selected="@(user.TenantId == tenant.TenantId)">@tenant.Name</option>
+                                    }
+                                </select>
+                            </div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">حفظ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
 
 <!-- Add user modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1">
