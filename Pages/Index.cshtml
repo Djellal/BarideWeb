@@ -51,23 +51,23 @@
         <ul class="nav nav-tabs type-tabs px-2 pt-2">
             <li class="nav-item">
                 <a class="nav-link @(Model.CurrentType == TypeCorresp.Entrant_Interne ? "active" : "")"
-                   asp-page="/Index" asp-route-type="0">وارد داخلي</a>
+                   asp-page="/Index" asp-route-type="0"><i class="bi bi-box-arrow-in-down-left"></i> وارد داخلي</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link @(Model.CurrentType == TypeCorresp.Entrant_Externe ? "active" : "")"
-                   asp-page="/Index" asp-route-type="1">وارد خارجي</a>
+                   asp-page="/Index" asp-route-type="1"><i class="bi bi-box-arrow-in-down-right"></i> وارد خارجي</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link @(Model.CurrentType == TypeCorresp.Sotant_Interne ? "active" : "")"
-                   asp-page="/Index" asp-route-type="2">صادر داخلي</a>
+                   asp-page="/Index" asp-route-type="2"><i class="bi bi-box-arrow-up-right"></i> صادر داخلي</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link @(Model.CurrentType == TypeCorresp.Sortant_Externe ? "active" : "")"
-                   asp-page="/Index" asp-route-type="3">صادر خارجي</a>
+                   asp-page="/Index" asp-route-type="3"><i class="bi bi-box-arrow-up-left"></i> صادر خارجي</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link @(Model.CurrentType == TypeCorresp.Divers ? "active" : "")"
-                   asp-page="/Index" asp-route-type="4">متفرقات</a>
+                   asp-page="/Index" asp-route-type="4"><i class="bi bi-folder2-open"></i> متفرقات</a>
             </li>
         </ul>
 
