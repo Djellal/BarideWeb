@@ -79,7 +79,7 @@
                         <h6 class="fw-bold"><i class="bi bi-paperclip"></i> الوثائق المرفقة</h6>
                         @if (Model.Documents.Any())
                         {
-                            <table class="table table-sm table-bordered">
+                            <table class="table table-sm table-bordered table-hover">
                                 <thead>
                                     <tr>
                                         <th>الوصف</th>
@@ -90,20 +90,20 @@
                                 <tbody>
                                     @foreach (var doc in Model.Documents)
                                     {
-                                        <tr>
+                                        <tr style="cursor:pointer;" onclick="showExistingDoc('/uploads/@doc.FileName', this)" class="@(doc == Model.Documents.First() ? "table-active" : "")">
                                             <td>@doc.Designation</td>
                                             <td>
                                                 @if (!string.IsNullOrEmpty(doc.FileName))
                                                 {
-                                                    <a href="/uploads/@doc.FileName" target="_blank" class="btn btn-sm btn-outline-info">
-                                                        <i class="bi bi-eye"></i> عرض
+                                                    <a href="/uploads/@doc.FileName" target="_blank" class="btn btn-sm btn-outline-info" onclick="event.stopPropagation();">
+                                                        <i class="bi bi-box-arrow-up-left"></i>
                                                     </a>
                                                 }
                                             </td>
                                             <td>
                                                 <button type="submit" asp-page-handler="DeleteDoc" name="docId" value="@doc.DocId"
                                                         class="btn btn-sm btn-outline-danger"
-                                                        onclick="event.preventDefault(); var btn=this; swalConfirm('هل تريد فعلا حذف هذه الوثيقة ؟', function(){ btn.removeAttribute('onclick'); btn.click(); });">
+                                                        onclick="event.stopPropagation(); event.preventDefault(); var btn=this; swalConfirm('هل تريد فعلا حذف هذه الوثيقة ؟', function(){ btn.removeAttribute('onclick'); btn.click(); });">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </td>
@@ -111,6 +111,25 @@
                                     }
                                 </tbody>
                             </table>
+
+                            <div id="existingDocViewer" class="border rounded mb-3">
+                                @{
+                                    var firstDoc = Model.Documents.First();
+                                    var firstExt = firstDoc.FileName?.Split('.').LastOrDefault()?.ToLower();
+                                }
+                                @if (firstExt == "pdf")
+                                {
+                                    <iframe src="/uploads/@firstDoc.FileName" width="100%" height="500" style="border:none;"></iframe>
+                                }
+                                else if (new[] { "jpg", "jpeg", "png", "gif", "bmp", "webp" }.Contains(firstExt))
+                                {
+                                    <div class="p-3 text-center"><img src="/uploads/@firstDoc.FileName" class="img-fluid rounded shadow-sm" style="max-height:500px;" /></div>
+                                }
+                                else
+                                {
+                                    <div class="text-center p-4 text-muted"><i class="bi bi-file-earmark" style="font-size:3rem;"></i><p class="mt-2"><a href="/uploads/@firstDoc.FileName" target="_blank" class="btn btn-primary btn-sm"><i class="bi bi-download"></i> تحميل الملف</a></p></div>
+                                }
+                            </div>
                         }
                         else
                         {
@@ -128,21 +147,6 @@
                     <!-- Scanner -->
                     <partial name="_ScannerPanel" />
 
-                    <!-- PDF Viewer -->
-                    @if (Model.Documents.Any(d => d.FileName != null && d.FileName.EndsWith(".pdf")))
-                    {
-                        <div class="mt-4">
-                            <h6 class="fw-bold"><i class="bi bi-file-earmark-pdf"></i> معاينة الوثيقة</h6>
-                            @{
-                                var firstPdf = Model.Documents.FirstOrDefault(d => d.FileName != null && d.FileName.EndsWith(".pdf"));
-                            }
-                            @if (firstPdf != null)
-                            {
-                                <iframe src="/uploads/@firstPdf.FileName" width="100%" height="500" class="border rounded"></iframe>
-                            }
-                        </div>
-                    }
-
                     <div class="mt-4 d-flex gap-2">
                         <button type="submit" class="btn btn-success">
                             <i class="bi bi-check-circle"></i> حفظ التعديلات
@@ -159,6 +163,20 @@
 
 @section Scripts {
 <script>
+function showExistingDoc(url, row) {
+    var viewer = document.getElementById('existingDocViewer');
+    if (!viewer) return;
+    row.closest('tbody').querySelectorAll('tr').forEach(function(r) { r.classList.remove('table-active'); });
+    row.classList.add('table-active');
+    var ext = url.split('.').pop().toLowerCase();
+    if (ext === 'pdf') {
+        viewer.innerHTML = '<iframe src="' + url + '" width="100%" height="500" style="border:none;"></iframe>';
+    } else if (['jpg','jpeg','png','gif','bmp','webp'].indexOf(ext) >= 0) {
+        viewer.innerHTML = '<div class="p-3 text-center"><img src="' + url + '" class="img-fluid rounded shadow-sm" style="max-height:500px;" /></div>';
+    } else {
+        viewer.innerHTML = '<div class="text-center p-4 text-muted"><i class="bi bi-file-earmark" style="font-size:3rem;"></i><p class="mt-2"><a href="' + url + '" target="_blank" class="btn btn-primary btn-sm"><i class="bi bi-download"></i> تحميل الملف</a></p></div>';
+    }
+}
 function previewFiles(input) {
     var area = document.getElementById('filePreviewArea');
     var list = document.getElementById('filePreviewList');
