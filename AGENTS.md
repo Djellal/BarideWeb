@@ -34,7 +34,7 @@ Single ASP.NET Core **.NET 10 Razor Pages** app backed by **PostgreSQL** (EF Cor
 - `Services/` — `TenantService` (reads tenant claim), `EmailService` (MailKit/SMTP), `EmailTemplateService`, `FileValidation`.
 - `Pages/` — Razor Pages. `Pages/Shared/_Layout.cshtml` is the authenticated shell; `_PublicLayout.cshtml` for `SharedView`. `Pages/Shared/_CorrespView.cshtml` + `_ScannerPanel.cshtml` are shared partials.
 - `wwwroot/Dynamic-Web-TWAIN-19.3.2/` is a vendored third-party scanner SDK (has its own `.github/`); don't reformat or "clean up" it.
-- UI is RTL Arabic. Arabic labels for `TypeCorresp` are **hardcoded in switch expressions** in `Pages/Index.cshtml.cs`, `Correspondances/Create.cshtml.cs`, `Correspondances/View.cshtml.cs`, and `Services/EmailTemplateService.cs` — updating a type means updating all of them.
+- UI is RTL Arabic. Arabic labels for `TypeCorresp` are **hardcoded in switch expressions** in `Pages/Index.cshtml.cs`, `Correspondances/Create.cshtml.cs`, `Correspondances/View.cshtml.cs`, `Correspondances/Print.cshtml.cs`, and `Services/EmailTemplateService.cs` — updating a type means updating all of them.
 - Per-tenant settings live in the `AppParameter` table (keys `CorrespViewMode`, `ScannerDpi`, `ScannerPixelMode`, `ScannerImageFormat`, `EmailTemplate`), not `appsettings.json`. `ViewMode`: 0=NewTab, 1=Modal, 2=SameTab.
 - Uploads are written to `wwwroot/uploads/` (gitignored) as GUID filenames; validate with `Services/FileValidation.cs` (max 20 MB; PDF/images only).
 - Frontend libs are loaded from CDN in `_Layout.cshtml` (Bootstrap 5 RTL, AG Grid 32, Tom Select, AOS, SweetAlert2, Notyf, countUp). The layout defines globals `notyf` and `swalConfirm(message, formOrCallback)` — reuse these instead of re-importing.

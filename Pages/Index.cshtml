@@ -28,18 +28,22 @@
             }
 
             <!-- Print -->
-            <a class="btn btn-info btn-sm text-white" asp-page="/Correspondances/Print" asp-route-type="@((int)Model.CurrentType)">
+            <a class="btn btn-info btn-sm text-white" asp-page="/Correspondances/Print" asp-route-type="@(Model.ShowAll ? -1 : (int)Model.CurrentType)">
                 <i class="bi bi-printer"></i> طباعة
             </a>
         </div>
 
         <!-- Search -->
         <form method="get" class="d-flex gap-2 align-items-center mt-2 mt-lg-0">
+            @if (Model.ShowAll)
+            {
+                <input type="hidden" name="type" value="-1" />
+            }
             <input type="text" name="search" value="@Model.SearchText" class="form-control form-control-sm search-box" placeholder="بحث في كل المراسلات..." />
             <button type="submit" class="btn btn-light btn-sm"><i class="bi bi-search"></i></button>
             @if (!string.IsNullOrEmpty(Model.SearchText))
             {
-                <a class="btn btn-outline-light btn-sm" asp-page="/Index" asp-route-type="@((int)Model.CurrentType)">
+                <a class="btn btn-outline-light btn-sm" asp-page="/Index" asp-route-type="@(Model.ShowAll ? -1 : (int)Model.CurrentType)">
                     <i class="bi bi-x-circle"></i>
                 </a>
             }
@@ -50,23 +54,27 @@
         <!-- Type tabs -->
         <ul class="nav nav-tabs type-tabs px-2 pt-2">
             <li class="nav-item">
-                <a class="nav-link @(Model.CurrentType == TypeCorresp.Entrant_Interne ? "active" : "")"
+                <a class="nav-link @(Model.ShowAll ? "active" : "")"
+                   asp-page="/Index" asp-route-type="-1"><i class="bi bi-collection"></i> كل المراسلات</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(Model.CurrentType == TypeCorresp.Entrant_Interne && !Model.ShowAll ? "active" : "")"
                    asp-page="/Index" asp-route-type="0"><i class="bi bi-box-arrow-in-down-left"></i> وارد داخلي</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(Model.CurrentType == TypeCorresp.Entrant_Externe ? "active" : "")"
+                <a class="nav-link @(Model.CurrentType == TypeCorresp.Entrant_Externe && !Model.ShowAll ? "active" : "")"
                    asp-page="/Index" asp-route-type="1"><i class="bi bi-box-arrow-in-down-right"></i> وارد خارجي</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(Model.CurrentType == TypeCorresp.Sotant_Interne ? "active" : "")"
+                <a class="nav-link @(Model.CurrentType == TypeCorresp.Sotant_Interne && !Model.ShowAll ? "active" : "")"
                    asp-page="/Index" asp-route-type="2"><i class="bi bi-box-arrow-up-right"></i> صادر داخلي</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(Model.CurrentType == TypeCorresp.Sortant_Externe ? "active" : "")"
+                <a class="nav-link @(Model.CurrentType == TypeCorresp.Sortant_Externe && !Model.ShowAll ? "active" : "")"
                    asp-page="/Index" asp-route-type="3"><i class="bi bi-box-arrow-up-left"></i> صادر خارجي</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link @(Model.CurrentType == TypeCorresp.Divers ? "active" : "")"
+                <a class="nav-link @(Model.CurrentType == TypeCorresp.Divers && !Model.ShowAll ? "active" : "")"
                    asp-page="/Index" asp-route-type="4"><i class="bi bi-folder2-open"></i> متفرقات</a>
             </li>
         </ul>
@@ -81,7 +89,7 @@
         <!-- Advanced filter panel -->
         <div class="collapse px-3 pt-2" id="filterPanel">
             <form method="get" class="card card-body bg-light">
-                <input type="hidden" name="type" value="@((int)Model.CurrentType)" />
+                <input type="hidden" name="type" value="@(Model.ShowAll ? -1 : (int)Model.CurrentType)" />
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label class="form-label">الصنف</label>
@@ -111,7 +119,7 @@
                     </div>
                     <div class="col-md-3 d-flex align-items-end gap-2">
                         <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-funnel-fill"></i> فرز</button>
-                        <a class="btn btn-secondary btn-sm" asp-page="/Index" asp-route-type="@((int)Model.CurrentType)">إلغاء</a>
+                        <a class="btn btn-secondary btn-sm" asp-page="/Index" asp-route-type="@(Model.ShowAll ? -1 : (int)Model.CurrentType)">إلغاء</a>
                     </div>
                 </div>
             </form>
@@ -123,7 +131,7 @@
         <!-- Hidden delete form -->
         <form method="post" asp-page-handler="Delete" id="deleteForm" style="display:none;">
             <input type="hidden" name="id" id="deleteId" />
-            <input type="hidden" name="type" value="@((int)Model.CurrentType)" />
+            <input type="hidden" name="type" value="@(Model.ShowAll ? -1 : (int)Model.CurrentType)" />
         </form>
     </div>
 
@@ -258,6 +266,7 @@
         var searchAll = @(Model.SearchAll ? "true" : "false");
         var canEdit = @(User.IsInRole("Admin") || User.IsInRole("TenantAdmin") ? "true" : "false");
         var currentType = @((int)Model.CurrentType);
+        var showAll = @(Model.ShowAll ? "true" : "false");
         var filterCatId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.FilterCatId?.ToString() ?? ""));
         var filterExped = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.FilterExped ?? ""));
         var filterObjet = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.FilterObjet ?? ""));
@@ -275,7 +284,7 @@
             { field: 'categorie', headerName: 'الصنف', sortable: true, minWidth: 120 }
         ];
 
-        if (searchAll) {
+        if (searchAll || showAll) {
             columnDefs.push({ field: 'typeLabel', headerName: 'النوع', sortable: true, minWidth: 110 });
         }
 
@@ -320,8 +329,8 @@
                     sortDir = params.sortModel[0].sort;
                 }
 
-                var url = '/api/correspondances?startRow=' + params.startRow + '&endRow=' + params.endRow
-                    + '&type=' + currentType;
+                var url = '/api/correspondances?startRow=' + params.startRow + '&endRow=' + params.endRow;
+                if (!showAll) url += '&type=' + currentType;
                 if (searchText) url += '&search=' + encodeURIComponent(searchText);
                 if (filterCatId) url += '&catId=' + filterCatId;
                 if (filterExped) url += '&exped=' + encodeURIComponent(filterExped);

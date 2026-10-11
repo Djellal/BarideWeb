@@ -190,7 +190,7 @@ app.MapGet("/api/correspondances", async (
             c.Objet.Contains(search) ||
             (c.Observation != null && c.Observation.Contains(search)));
     }
-    else if (type.HasValue)
+    else if (type.HasValue && type.Value >= 0)
     {
         var tp = (TypeCorresp)type.Value;
         query = query.Where(c => c.Type == tp);

@@ -37,6 +37,7 @@ namespace BarideWeb.Pages
         public ViewMode CorrespViewMode { get; set; } = ViewMode.NewTab;
         public Dictionary<Guid, int> TransfertCounts { get; set; } = new();
         public List<AppUser> Users { get; set; } = new();
+        public bool ShowAll { get; set; }
 
         // Filter properties
         public Guid? FilterCatId { get; set; }
@@ -45,11 +46,12 @@ namespace BarideWeb.Pages
         public DateTime? FilterDateFrom { get; set; }
         public DateTime? FilterDateTo { get; set; }
 
-        public async Task OnGetAsync(int type = 0, string? search = null,
+        public async Task OnGetAsync(int type = -1, string? search = null,
             Guid? catId = null, string? exped = null, string? objet = null,
             DateTime? dateFrom = null, DateTime? dateTo = null)
         {
-            CurrentType = (TypeCorresp)type;
+            ShowAll = type < 0;
+            CurrentType = ShowAll ? TypeCorresp.Entrant_Interne : (TypeCorresp)type;
             SearchText = search;
             FilterCatId = catId;
             FilterExped = exped;
@@ -57,8 +59,10 @@ namespace BarideWeb.Pages
             FilterDateFrom = dateFrom;
             FilterDateTo = dateTo;
 
-            ExpedLabel = CurrentType == TypeCorresp.Entrant_Interne || CurrentType == TypeCorresp.Entrant_Externe
-                ? "المرسل" : "المرسل إليه";
+            ExpedLabel = ShowAll
+                ? "المرسل/المرسل إليه"
+                : CurrentType == TypeCorresp.Entrant_Interne || CurrentType == TypeCorresp.Entrant_Externe
+                    ? "المرسل" : "المرسل إليه";
 
             Categories = await _context.Categories.ToListAsync();
 
