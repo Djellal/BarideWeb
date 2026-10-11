@@ -144,7 +144,7 @@
 {
     <!-- View modal -->
     <div class="modal fade" id="viewModal" tabindex="-1">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-dialog view-modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">عرض المراسلة</h5>
@@ -155,6 +155,7 @@
                         <div class="spinner-border" role="status"></div>
                     </div>
                 </div>
+                <div class="modal-resize-handle" title="اسحب لتغيير الحجم"></div>
             </div>
         </div>
     </div>
@@ -217,6 +218,51 @@
         </div>
     </div>
 </div>
+
+@section Styles {
+    <style>
+        #viewModal .view-modal-dialog {
+            width: min(94vw, 1500px);
+            max-width: none;
+            height: min(90vh, 950px);
+            margin: 5vh auto;
+        }
+
+        #viewModal .modal-content {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #viewModal .modal-body {
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        #viewModal .modal-resize-handle {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 22px;
+            height: 22px;
+            cursor: nesw-resize;
+            z-index: 5;
+            border-bottom-left-radius: var(--radius);
+            background-image: repeating-linear-gradient(-45deg, var(--primary) 0 1.5px, transparent 1.5px 5px);
+            opacity: .45;
+        }
+
+        #viewModal .modal-resize-handle:hover {
+            opacity: .85;
+        }
+
+        .modal-resize-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            cursor: nesw-resize;
+        }
+    </style>
+}
 
 @section Scripts {
     <script>
@@ -451,5 +497,91 @@
             });
             document.getElementById('contactsJsonInput').value = JSON.stringify(items);
         }
+
+        // ===== Resizable "عرض المراسلة" dialog =====
+        (function () {
+            var modalEl = document.getElementById('viewModal');
+            if (!modalEl) return;
+            var dialog = modalEl.querySelector('.view-modal-dialog');
+            var handle = modalEl.querySelector('.modal-resize-handle');
+            if (!dialog || !handle) return;
+
+            var MIN_W = 480, MIN_H = 320, PAD = 24;
+            var STORAGE_KEY = 'viewModalSize';
+
+            function saveSize() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                        w: dialog.offsetWidth,
+                        h: dialog.offsetHeight
+                    }));
+                } catch (e) { /* storage unavailable (private mode) */ }
+            }
+
+            function applySavedSize() {
+                try {
+                    var raw = localStorage.getItem(STORAGE_KEY);
+                    if (!raw) return;
+                    var s = JSON.parse(raw);
+                    if (s && s.w >= MIN_W && s.h >= MIN_H) {
+                        dialog.style.width = s.w + 'px';
+                        dialog.style.height = s.h + 'px';
+                    }
+                } catch (e) { /* ignore corrupt value */ }
+            }
+
+            function fitViewport() {
+                var maxW = window.innerWidth - PAD;
+                var maxH = window.innerHeight - PAD;
+                if (dialog.offsetWidth > maxW) dialog.style.width = maxW + 'px';
+                if (dialog.offsetHeight > maxH) dialog.style.height = maxH + 'px';
+            }
+
+            modalEl.addEventListener('show.bs.modal', function () {
+                applySavedSize();
+                fitViewport();
+            });
+            window.addEventListener('resize', function () {
+                if (modalEl.classList.contains('show')) fitViewport();
+            });
+
+            handle.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var startX = e.clientX, startY = e.clientY;
+                var rect = dialog.getBoundingClientRect();
+                var startW = rect.width, startH = rect.height;
+                var maxW = window.innerWidth - PAD;
+                var maxH = window.innerHeight - PAD;
+
+                // Transparent overlay captures the drag so an <iframe> preview
+                // cannot swallow mousemove events.
+                var overlay = document.createElement('div');
+                overlay.className = 'modal-resize-overlay';
+                document.body.appendChild(overlay);
+
+                function onMove(ev) {
+                    var dx = ev.clientX - startX;
+                    var dy = ev.clientY - startY;
+                    // Grip is the bottom-left (inline-end) corner and the dialog stays
+                    // centered, so the width delta is doubled to track the cursor.
+                    var w = Math.max(MIN_W, Math.min(startW - dx * 2, maxW));
+                    var h = Math.max(MIN_H, Math.min(startH + dy, maxH));
+                    dialog.style.width = w + 'px';
+                    dialog.style.height = h + 'px';
+                }
+
+                function onUp() {
+                    overlay.removeEventListener('mousemove', onMove);
+                    overlay.removeEventListener('mouseup', onUp);
+                    overlay.remove();
+                    saveSize();
+                }
+
+                overlay.addEventListener('mousemove', onMove);
+                overlay.addEventListener('mouseup', onUp);
+            });
+        })();
     </script>
 }
